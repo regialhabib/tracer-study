@@ -1,10 +1,11 @@
-import InputError from '@/Components/InputError';
-import InputLabel from '@/Components/InputLabel';
-import PrimaryButton from '@/Components/PrimaryButton';
-import TextInput from '@/Components/TextInput';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/Components/ui/card';
+import { Button } from '@/Components/ui/button';
+import { Input } from '@/Components/ui/input';
+import { Label } from '@/Components/ui/label';
+import { Badge } from '@/Components/ui/badge';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { GraduationCap } from 'lucide-react';
+import { UserPlus, Sparkles } from 'lucide-react';
 
 export default function Register() {
     const currentYear = new Date().getFullYear();
@@ -33,185 +34,206 @@ export default function Register() {
         <GuestLayout>
             <Head title="Pendaftaran Mandiri Santri Alumni" />
 
-            <div className="mb-6 text-center">
-                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
-                    <GraduationCap className="h-6 w-6" />
-                </div>
-                <h2 className="text-xl font-bold tracking-tight text-gray-900">
-                    Registrasi Mandiri Alumni MA
-                </h2>
-                <p className="mt-1 text-xs text-gray-500">
-                    Daftar akun jika NISN Anda belum terdaftar dalam sistem
-                </p>
-            </div>
-
-            <form onSubmit={submit} className="space-y-4">
-                <div>
-                    <InputLabel htmlFor="name" value="Nama Lengkap Santri" />
-                    <TextInput
-                        id="name"
-                        name="name"
-                        value={data.name}
-                        className="mt-1 block w-full rounded-lg border-gray-300 focus:border-emerald-500 focus:ring-emerald-500"
-                        autoComplete="name"
-                        placeholder="Nama lengkap sesuai ijazah"
-                        isFocused={true}
-                        onChange={(e) => setData('name', e.target.value)}
-                        required
-                    />
-                    <InputError message={errors.name} className="mt-1" />
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                    <div>
-                        <InputLabel htmlFor="nisn" value="NISN (10 Digit)" />
-                        <TextInput
-                            id="nisn"
-                            name="nisn"
-                            value={data.nisn}
-                            className="mt-1 block w-full rounded-lg border-gray-300 focus:border-emerald-500 focus:ring-emerald-500"
-                            placeholder="005XXXXXXX"
-                            maxLength="20"
-                            onChange={(e) => setData('nisn', e.target.value)}
-                            required
-                        />
-                        <InputError message={errors.nisn} className="mt-1" />
+            <Card className="shadow-lg border-slate-200/80 dark:border-slate-800">
+                <CardHeader className="space-y-1 text-center pb-4">
+                    <div className="flex justify-center mb-1">
+                        <Badge variant="emerald" className="gap-1 px-3 py-1 text-xs">
+                            <Sparkles className="h-3 w-3" /> Registrasi Mandiri Alumni
+                        </Badge>
                     </div>
+                    <CardTitle className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+                        Buat Akun Santri
+                    </CardTitle>
+                    <CardDescription className="text-xs text-slate-500">
+                        Daftarkan data kelulusan Anda untuk mengakses kuesioner tracer study
+                    </CardDescription>
+                </CardHeader>
 
-                    <div>
-                        <InputLabel htmlFor="gender" value="Jenis Kelamin" />
-                        <select
-                            id="gender"
-                            name="gender"
-                            value={data.gender}
-                            className="mt-1 block w-full rounded-lg border-gray-300 py-2 text-sm focus:border-emerald-500 focus:ring-emerald-500"
-                            onChange={(e) => setData('gender', e.target.value)}
-                            required
+                <CardContent className="space-y-4">
+                    <form onSubmit={submit} className="space-y-4">
+                        <div className="space-y-1.5">
+                            <Label htmlFor="name">Nama Lengkap Santri</Label>
+                            <Input
+                                id="name"
+                                name="name"
+                                value={data.name}
+                                autoComplete="name"
+                                placeholder="Nama sesuai ijazah MA"
+                                autoFocus
+                                onChange={(e) => setData('name', e.target.value)}
+                                required
+                            />
+                            {errors.name && (
+                                <p className="text-xs text-red-600 font-medium">{errors.name}</p>
+                            )}
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-1.5">
+                                <Label htmlFor="nisn">NISN (10 Digit)</Label>
+                                <Input
+                                    id="nisn"
+                                    name="nisn"
+                                    value={data.nisn}
+                                    placeholder="005XXXXXXX"
+                                    maxLength="20"
+                                    onChange={(e) => setData('nisn', e.target.value)}
+                                    required
+                                />
+                                {errors.nisn && (
+                                    <p className="text-xs text-red-600 font-medium">{errors.nisn}</p>
+                                )}
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <Label htmlFor="gender">Jenis Kelamin</Label>
+                                <select
+                                    id="gender"
+                                    name="gender"
+                                    value={data.gender}
+                                    className="flex h-10 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-50"
+                                    onChange={(e) => setData('gender', e.target.value)}
+                                    required
+                                >
+                                    <option value="L">Laki-laki (Banin)</option>
+                                    <option value="P">Perempuan (Banat)</option>
+                                </select>
+                                {errors.gender && (
+                                    <p className="text-xs text-red-600 font-medium">{errors.gender}</p>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-1.5">
+                                <Label htmlFor="major">Peminatan / Jurusan</Label>
+                                <select
+                                    id="major"
+                                    name="major"
+                                    value={data.major}
+                                    className="flex h-10 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-50"
+                                    onChange={(e) => setData('major', e.target.value)}
+                                    required
+                                >
+                                    <option value="Keagamaan (PK)">Keagamaan (PK)</option>
+                                    <option value="MIPA">MIPA</option>
+                                    <option value="IPS">IPS</option>
+                                    <option value="Bahasa">Bahasa</option>
+                                </select>
+                                {errors.major && (
+                                    <p className="text-xs text-red-600 font-medium">{errors.major}</p>
+                                )}
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <Label htmlFor="graduation_year">Tahun Kelulusan</Label>
+                                <Input
+                                    id="graduation_year"
+                                    type="number"
+                                    name="graduation_year"
+                                    value={data.graduation_year}
+                                    min="2010"
+                                    max={currentYear + 1}
+                                    onChange={(e) => setData('graduation_year', e.target.value)}
+                                    required
+                                />
+                                {errors.graduation_year && (
+                                    <p className="text-xs text-red-600 font-medium">{errors.graduation_year}</p>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="space-y-1.5">
+                            <Label htmlFor="email">Alamat Email Aktif</Label>
+                            <Input
+                                id="email"
+                                type="email"
+                                name="email"
+                                value={data.email}
+                                autoComplete="email"
+                                placeholder="alumni@contoh.com"
+                                onChange={(e) => setData('email', e.target.value)}
+                                required
+                            />
+                            {errors.email && (
+                                <p className="text-xs text-red-600 font-medium">{errors.email}</p>
+                            )}
+                        </div>
+
+                        <div className="space-y-1.5">
+                            <Label htmlFor="phone_number">Nomor WhatsApp</Label>
+                            <Input
+                                id="phone_number"
+                                type="tel"
+                                name="phone_number"
+                                value={data.phone_number}
+                                placeholder="Contoh: 081234567890"
+                                onChange={(e) => setData('phone_number', e.target.value)}
+                            />
+                            {errors.phone_number && (
+                                <p className="text-xs text-red-600 font-medium">{errors.phone_number}</p>
+                            )}
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-1.5">
+                                <Label htmlFor="password">Password</Label>
+                                <Input
+                                    id="password"
+                                    type="password"
+                                    name="password"
+                                    value={data.password}
+                                    autoComplete="new-password"
+                                    placeholder="Min 8 karakter"
+                                    onChange={(e) => setData('password', e.target.value)}
+                                    required
+                                />
+                                {errors.password && (
+                                    <p className="text-xs text-red-600 font-medium">{errors.password}</p>
+                                )}
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <Label htmlFor="password_confirmation">Ulangi Password</Label>
+                                <Input
+                                    id="password_confirmation"
+                                    type="password"
+                                    name="password_confirmation"
+                                    value={data.password_confirmation}
+                                    autoComplete="new-password"
+                                    placeholder="Ulangi"
+                                    onChange={(e) => setData('password_confirmation', e.target.value)}
+                                    required
+                                />
+                                {errors.password_confirmation && (
+                                    <p className="text-xs text-red-600 font-medium">{errors.password_confirmation}</p>
+                                )}
+                            </div>
+                        </div>
+
+                        <Button
+                            type="submit"
+                            disabled={processing}
+                            className="w-full gap-2 bg-emerald-700 hover:bg-emerald-800 text-white font-medium shadow-md shadow-emerald-700/20"
                         >
-                            <option value="L">Laki-laki (Banin)</option>
-                            <option value="P">Perempuan (Banat)</option>
-                        </select>
-                        <InputError message={errors.gender} className="mt-1" />
-                    </div>
-                </div>
+                            <UserPlus className="h-4 w-4" />
+                            {processing ? 'Mendaftarkan Data...' : 'Daftar Akun Santri'}
+                        </Button>
+                    </form>
+                </CardContent>
 
-                <div className="grid grid-cols-2 gap-3">
-                    <div>
-                        <InputLabel htmlFor="major" value="Peminatan / Jurusan" />
-                        <select
-                            id="major"
-                            name="major"
-                            value={data.major}
-                            className="mt-1 block w-full rounded-lg border-gray-300 py-2 text-sm focus:border-emerald-500 focus:ring-emerald-500"
-                            onChange={(e) => setData('major', e.target.value)}
-                            required
+                <CardFooter className="flex flex-col space-y-2 border-t border-slate-100 dark:border-slate-800/80 pt-4 text-center">
+                    <p className="text-xs text-slate-500">
+                        Sudah memiliki akun santri?{' '}
+                        <Link
+                            href={route('login')}
+                            className="font-semibold text-emerald-700 hover:text-emerald-800 hover:underline dark:text-emerald-400"
                         >
-                            <option value="Keagamaan (PK)">Keagamaan (PK)</option>
-                            <option value="MIPA">MIPA</option>
-                            <option value="IPS">IPS</option>
-                            <option value="Bahasa">Bahasa</option>
-                        </select>
-                        <InputError message={errors.major} className="mt-1" />
-                    </div>
-
-                    <div>
-                        <InputLabel htmlFor="graduation_year" value="Tahun Lulus" />
-                        <input
-                            id="graduation_year"
-                            type="number"
-                            name="graduation_year"
-                            value={data.graduation_year}
-                            min="2010"
-                            max={currentYear + 1}
-                            className="mt-1 block w-full rounded-lg border-gray-300 py-2 text-sm focus:border-emerald-500 focus:ring-emerald-500"
-                            onChange={(e) => setData('graduation_year', e.target.value)}
-                            required
-                        />
-                        <InputError message={errors.graduation_year} className="mt-1" />
-                    </div>
-                </div>
-
-                <div>
-                    <InputLabel htmlFor="email" value="Alamat Email Aktif" />
-                    <TextInput
-                        id="email"
-                        type="email"
-                        name="email"
-                        value={data.email}
-                        className="mt-1 block w-full rounded-lg border-gray-300 focus:border-emerald-500 focus:ring-emerald-500"
-                        autoComplete="email"
-                        placeholder="nama@email.com"
-                        onChange={(e) => setData('email', e.target.value)}
-                        required
-                    />
-                    <InputError message={errors.email} className="mt-1" />
-                </div>
-
-                <div>
-                    <InputLabel htmlFor="phone_number" value="Nomor WhatsApp" />
-                    <TextInput
-                        id="phone_number"
-                        type="tel"
-                        name="phone_number"
-                        value={data.phone_number}
-                        className="mt-1 block w-full rounded-lg border-gray-300 focus:border-emerald-500 focus:ring-emerald-500"
-                        placeholder="Contoh: 081234567890"
-                        onChange={(e) => setData('phone_number', e.target.value)}
-                    />
-                    <InputError message={errors.phone_number} className="mt-1" />
-                </div>
-
-                <div>
-                    <InputLabel htmlFor="password" value="Password Akun" />
-                    <TextInput
-                        id="password"
-                        type="password"
-                        name="password"
-                        value={data.password}
-                        className="mt-1 block w-full rounded-lg border-gray-300 focus:border-emerald-500 focus:ring-emerald-500"
-                        autoComplete="new-password"
-                        placeholder="Minimal 8 karakter"
-                        onChange={(e) => setData('password', e.target.value)}
-                        required
-                    />
-                    <InputError message={errors.password} className="mt-1" />
-                </div>
-
-                <div>
-                    <InputLabel htmlFor="password_confirmation" value="Ulangi Password" />
-                    <TextInput
-                        id="password_confirmation"
-                        type="password"
-                        name="password_confirmation"
-                        value={data.password_confirmation}
-                        className="mt-1 block w-full rounded-lg border-gray-300 focus:border-emerald-500 focus:ring-emerald-500"
-                        autoComplete="new-password"
-                        placeholder="Ketik ulang password"
-                        onChange={(e) => setData('password_confirmation', e.target.value)}
-                        required
-                    />
-                    <InputError message={errors.password_confirmation} className="mt-1" />
-                </div>
-
-                <div className="pt-2">
-                    <PrimaryButton
-                        className="w-full justify-center bg-emerald-700 py-2.5 text-sm font-semibold hover:bg-emerald-800 focus:bg-emerald-800"
-                        disabled={processing}
-                    >
-                        {processing ? 'Mendaftarkan...' : 'Daftar Akun Santri'}
-                    </PrimaryButton>
-                </div>
-
-                <div className="text-center text-xs text-gray-600">
-                    Sudah punya akun?{' '}
-                    <Link
-                        href={route('login')}
-                        className="font-semibold text-emerald-700 hover:underline"
-                    >
-                        Masuk Disini
-                    </Link>
-                </div>
-            </form>
+                            Masuk Disini
+                        </Link>
+                    </p>
+                </CardFooter>
+            </Card>
         </GuestLayout>
     );
 }

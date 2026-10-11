@@ -1,11 +1,12 @@
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/Components/ui/card';
+import { Button } from '@/Components/ui/button';
+import { Input } from '@/Components/ui/input';
+import { Label } from '@/Components/ui/label';
+import { Alert, AlertDescription } from '@/Components/ui/alert';
 import Checkbox from '@/Components/Checkbox';
-import InputError from '@/Components/InputError';
-import InputLabel from '@/Components/InputLabel';
-import PrimaryButton from '@/Components/PrimaryButton';
-import TextInput from '@/Components/TextInput';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { GraduationCap, ShieldCheck } from 'lucide-react';
+import { LogIn, CheckCircle2, AlertCircle } from 'lucide-react';
 
 export default function Login({ status, canResetPassword }) {
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -22,108 +23,120 @@ export default function Login({ status, canResetPassword }) {
         });
     };
 
+    const loginError = errors.login || errors.email;
+
     return (
         <GuestLayout>
             <Head title="Masuk ke Sistem Tracer Study" />
 
-            <div className="mb-6 text-center">
-                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
-                    <GraduationCap className="h-6 w-6" />
-                </div>
-                <h2 className="text-xl font-bold tracking-tight text-gray-900">
-                    Tracer Study MA & Pondok Pesantren
-                </h2>
-                <p className="mt-1 text-xs text-gray-500">
-                    Masuk untuk melengkapi kuesioner kelulusan & silaturahmi alumni
-                </p>
-            </div>
+            <Card className="shadow-lg border-slate-200/80 dark:border-slate-800">
+                <CardHeader className="space-y-1 text-center pb-4">
+                    <CardTitle className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+                        Masuk ke Portal
+                    </CardTitle>
+                    <CardDescription className="text-xs text-slate-500">
+                        Silakan masukkan NISN Santri atau Email dan password akun Anda
+                    </CardDescription>
+                </CardHeader>
 
-            {status && (
-                <div className="mb-4 rounded-lg bg-emerald-50 p-3 text-sm font-medium text-emerald-700">
-                    {status}
-                </div>
-            )}
-
-            <form onSubmit={submit} className="space-y-4">
-                <div>
-                    <InputLabel htmlFor="login" value="NISN Santri atau Email" />
-
-                    <TextInput
-                        id="login"
-                        type="text"
-                        name="login"
-                        value={data.login}
-                        className="mt-1 block w-full rounded-lg border-gray-300 focus:border-emerald-500 focus:ring-emerald-500"
-                        autoComplete="username"
-                        placeholder="Contoh: 0051234501 atau admin@pesantren.sch.id"
-                        isFocused={true}
-                        onChange={(e) => setData('login', e.target.value)}
-                    />
-
-                    <p className="mt-1 text-xs text-gray-500">
-                        *Santri dapat menggunakan 10 digit NISN, ustadz/admin menggunakan email.
-                    </p>
-
-                    <InputError message={errors.login || errors.email} className="mt-1" />
-                </div>
-
-                <div>
-                    <InputLabel htmlFor="password" value="Password" />
-
-                    <TextInput
-                        id="password"
-                        type="password"
-                        name="password"
-                        value={data.password}
-                        className="mt-1 block w-full rounded-lg border-gray-300 focus:border-emerald-500 focus:ring-emerald-500"
-                        autoComplete="current-password"
-                        placeholder="Masukkan password akun Anda"
-                        onChange={(e) => setData('password', e.target.value)}
-                    />
-
-                    <InputError message={errors.password} className="mt-1" />
-                </div>
-
-                <div className="flex items-center justify-between text-sm">
-                    <label className="flex items-center text-gray-600">
-                        <Checkbox
-                            name="remember"
-                            checked={data.remember}
-                            onChange={(e) => setData('remember', e.target.checked)}
-                            className="text-emerald-600 focus:ring-emerald-500"
-                        />
-                        <span className="ms-2 text-xs">Ingat sesi saya</span>
-                    </label>
-
-                    {canResetPassword && (
-                        <Link
-                            href={route('password.request')}
-                            className="text-xs text-emerald-700 hover:underline"
-                        >
-                            Lupa password?
-                        </Link>
+                <CardContent className="space-y-4">
+                    {status && (
+                        <Alert variant="emerald" className="py-2.5">
+                            <CheckCircle2 className="h-4 w-4" />
+                            <AlertDescription>{status}</AlertDescription>
+                        </Alert>
                     )}
-                </div>
 
-                <div>
-                    <PrimaryButton
-                        className="w-full justify-center bg-emerald-700 py-2.5 text-sm font-semibold hover:bg-emerald-800 focus:bg-emerald-800 active:bg-emerald-900"
-                        disabled={processing}
-                    >
-                        {processing ? 'Memproses...' : 'Masuk ke Portal'}
-                    </PrimaryButton>
-                </div>
+                    {loginError && (
+                        <Alert variant="destructive" className="py-2.5">
+                            <AlertCircle className="h-4 w-4" />
+                            <AlertDescription>{loginError}</AlertDescription>
+                        </Alert>
+                    )}
 
-                <div className="pt-2 text-center text-xs text-gray-600">
-                    Belum terdaftar di sistem?{' '}
-                    <Link
-                        href={route('register')}
-                        className="font-semibold text-emerald-700 hover:underline"
-                    >
-                        Daftar Mandiri Disini
-                    </Link>
-                </div>
-            </form>
+                    <form onSubmit={submit} id="login-form" className="space-y-4">
+                        <div className="space-y-1.5">
+                            <Label htmlFor="login">NISN Santri atau Email</Label>
+                            <Input
+                                id="login"
+                                type="text"
+                                name="login"
+                                value={data.login}
+                                autoComplete="username"
+                                placeholder="Contoh: 0051234501 atau ustadz@pesantren.sch.id"
+                                autoFocus
+                                onChange={(e) => setData('login', e.target.value)}
+                            />
+                            <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                                Santri menggunakan 10 digit NISN. Ustadz & Admin menggunakan email.
+                            </p>
+                        </div>
+
+                        <div className="space-y-1.5">
+                            <div className="flex items-center justify-between">
+                                <Label htmlFor="password">Password</Label>
+                                {canResetPassword && (
+                                    <Link
+                                        href={route('password.request')}
+                                        className="text-xs font-medium text-emerald-700 hover:text-emerald-800 hover:underline dark:text-emerald-400"
+                                    >
+                                        Lupa password?
+                                    </Link>
+                                )}
+                            </div>
+                            <Input
+                                id="password"
+                                type="password"
+                                name="password"
+                                value={data.password}
+                                autoComplete="current-password"
+                                placeholder="••••••••"
+                                onChange={(e) => setData('password', e.target.value)}
+                            />
+                            {errors.password && (
+                                <p className="text-xs text-red-600 dark:text-red-400 font-medium">{errors.password}</p>
+                            )}
+                        </div>
+
+                        <div className="flex items-center space-x-2">
+                            <Checkbox
+                                id="remember"
+                                name="remember"
+                                checked={data.remember}
+                                onChange={(e) => setData('remember', e.target.checked)}
+                                className="rounded border-slate-300 text-emerald-700 focus:ring-emerald-700"
+                            />
+                            <label
+                                htmlFor="remember"
+                                className="text-xs font-medium leading-none text-slate-600 peer-disabled:cursor-not-allowed peer-disabled:opacity-70 dark:text-slate-400 cursor-pointer"
+                            >
+                                Ingat sesi login saya
+                            </label>
+                        </div>
+
+                        <Button
+                            type="submit"
+                            disabled={processing}
+                            className="w-full gap-2 bg-emerald-700 hover:bg-emerald-800 text-white font-medium shadow-md shadow-emerald-700/20"
+                        >
+                            <LogIn className="h-4 w-4" />
+                            {processing ? 'Memproses Masuk...' : 'Masuk ke Portal'}
+                        </Button>
+                    </form>
+                </CardContent>
+
+                <CardFooter className="flex flex-col space-y-2 border-t border-slate-100 dark:border-slate-800/80 pt-4 text-center">
+                    <p className="text-xs text-slate-500">
+                        Belum memiliki akun alumni?{' '}
+                        <Link
+                            href={route('register')}
+                            className="font-semibold text-emerald-700 hover:text-emerald-800 hover:underline dark:text-emerald-400"
+                        >
+                            Daftar Mandiri Disini
+                        </Link>
+                    </p>
+                </CardFooter>
+            </Card>
         </GuestLayout>
     );
 }
