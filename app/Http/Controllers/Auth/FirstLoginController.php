@@ -4,9 +4,9 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\Auth\FirstLoginService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
@@ -14,6 +14,13 @@ use Inertia\Response;
 
 class FirstLoginController extends Controller
 {
+    /**
+     * Injeksi dependensi FirstLoginService.
+     */
+    public function __construct(
+        private FirstLoginService $firstLoginService
+    ) {}
+
     /**
      * Menampilkan form onboarding bagi santri saat login pertama kali.
      */
@@ -31,7 +38,7 @@ class FirstLoginController extends Controller
     }
 
     /**
-     * Memperbarui email, nomor WhatsApp, dan password baru santri.
+     * Memperbarui email, nomor WhatsApp, dan password baru santri via FirstLoginService.
      */
     public function update(Request $request): RedirectResponse
     {
@@ -50,17 +57,7 @@ class FirstLoginController extends Controller
             'password' => ['required', 'confirmed', Password::defaults()],
         ]);
 
-        $user->update([
-            'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
-            'first_login' => false,
-        ]);
-
-        if ($user->profile) {
-            $user->profile->update([
-                'phone_number' => $validated['phone_number'] ?? $user->profile->phone_number,
-            ]);
-        }
+        $this->firstLoginService->completeOnboarding($user, $validated);
 
         return redirect()->route('dashboard')->with('status', 'Alhamdulillah! Akun dan password baru Anda berhasil diperbarui.');
     }

@@ -3,52 +3,26 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\AlumniProfile;
-use App\Models\Berita;
-use App\Models\Conversation;
-use App\Models\JawabanKuesioner;
-use App\Models\Kuesioner;
-use App\Models\User;
+use App\Services\Admin\DashboardAnalyticsService;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class AdminDashboardController extends Controller
 {
     /**
-     * Menampilkan dashboard utama administrator.
+     * Injeksi dependensi DashboardAnalyticsService.
+     */
+    public function __construct(
+        private DashboardAnalyticsService $analyticsService
+    ) {}
+
+    /**
+     * Menampilkan dashboard utama administrator via service.
      */
     public function index(): Response
     {
-        $totalAlumni = User::where('role', 'alumni')->count();
-        $totalResponses = JawabanKuesioner::distinct('user_id')->count('user_id');
-        $totalBerita = Berita::count();
-        $totalConversations = Conversation::count();
+        $metrics = $this->analyticsService->getDashboardMetrics();
 
-        $activeKuesioner = Kuesioner::withCount('pertanyaan')->where('is_active', true)->first();
-
-        $recentAlumni = User::with('profile')
-            ->where('role', 'alumni')
-            ->latest()
-            ->take(6)
-            ->get();
-
-        $statusBreakdown = AlumniProfile::query()
-            ->selectRaw('current_status, count(*) as count')
-            ->groupBy('current_status')
-            ->pluck('count', 'current_status')
-            ->toArray();
-
-        return Inertia::render('Admin/Dashboard', [
-            'stats' => [
-                'total_alumni' => $totalAlumni,
-                'total_responses' => $totalResponses,
-                'total_berita' => $totalBerita,
-                'total_conversations' => $totalConversations,
-                'response_rate' => $totalAlumni > 0 ? round(($totalResponses / $totalAlumni) * 100, 1) : 0,
-            ],
-            'activeKuesioner' => $activeKuesioner,
-            'recentAlumni' => $recentAlumni,
-            'statusBreakdown' => $statusBreakdown,
-        ]);
+        return Inertia::render('Admin/Dashboard', $metrics);
     }
 }
