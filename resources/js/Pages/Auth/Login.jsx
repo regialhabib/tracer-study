@@ -5,10 +5,11 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
+import { GraduationCap, ShieldCheck } from 'lucide-react';
 
 export default function Login({ status, canResetPassword }) {
     const { data, setData, post, processing, errors, reset } = useForm({
-        email: '',
+        login: '',
         password: '',
         remember: false,
     });
@@ -23,33 +24,50 @@ export default function Login({ status, canResetPassword }) {
 
     return (
         <GuestLayout>
-            <Head title="Log in" />
+            <Head title="Masuk ke Sistem Tracer Study" />
+
+            <div className="mb-6 text-center">
+                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
+                    <GraduationCap className="h-6 w-6" />
+                </div>
+                <h2 className="text-xl font-bold tracking-tight text-gray-900">
+                    Tracer Study MA & Pondok Pesantren
+                </h2>
+                <p className="mt-1 text-xs text-gray-500">
+                    Masuk untuk melengkapi kuesioner kelulusan & silaturahmi alumni
+                </p>
+            </div>
 
             {status && (
-                <div className="mb-4 text-sm font-medium text-green-600">
+                <div className="mb-4 rounded-lg bg-emerald-50 p-3 text-sm font-medium text-emerald-700">
                     {status}
                 </div>
             )}
 
-            <form onSubmit={submit}>
+            <form onSubmit={submit} className="space-y-4">
                 <div>
-                    <InputLabel htmlFor="email" value="Email" />
+                    <InputLabel htmlFor="login" value="NISN Santri atau Email" />
 
                     <TextInput
-                        id="email"
-                        type="email"
-                        name="email"
-                        value={data.email}
-                        className="mt-1 block w-full"
+                        id="login"
+                        type="text"
+                        name="login"
+                        value={data.login}
+                        className="mt-1 block w-full rounded-lg border-gray-300 focus:border-emerald-500 focus:ring-emerald-500"
                         autoComplete="username"
+                        placeholder="Contoh: 0051234501 atau admin@pesantren.sch.id"
                         isFocused={true}
-                        onChange={(e) => setData('email', e.target.value)}
+                        onChange={(e) => setData('login', e.target.value)}
                     />
 
-                    <InputError message={errors.email} className="mt-2" />
+                    <p className="mt-1 text-xs text-gray-500">
+                        *Santri dapat menggunakan 10 digit NISN, ustadz/admin menggunakan email.
+                    </p>
+
+                    <InputError message={errors.login || errors.email} className="mt-1" />
                 </div>
 
-                <div className="mt-4">
+                <div>
                     <InputLabel htmlFor="password" value="Password" />
 
                     <TextInput
@@ -57,42 +75,53 @@ export default function Login({ status, canResetPassword }) {
                         type="password"
                         name="password"
                         value={data.password}
-                        className="mt-1 block w-full"
+                        className="mt-1 block w-full rounded-lg border-gray-300 focus:border-emerald-500 focus:ring-emerald-500"
                         autoComplete="current-password"
+                        placeholder="Masukkan password akun Anda"
                         onChange={(e) => setData('password', e.target.value)}
                     />
 
-                    <InputError message={errors.password} className="mt-2" />
+                    <InputError message={errors.password} className="mt-1" />
                 </div>
 
-                <div className="mt-4 block">
-                    <label className="flex items-center">
+                <div className="flex items-center justify-between text-sm">
+                    <label className="flex items-center text-gray-600">
                         <Checkbox
                             name="remember"
                             checked={data.remember}
-                            onChange={(e) =>
-                                setData('remember', e.target.checked)
-                            }
+                            onChange={(e) => setData('remember', e.target.checked)}
+                            className="text-emerald-600 focus:ring-emerald-500"
                         />
-                        <span className="ms-2 text-sm text-gray-600">
-                            Remember me
-                        </span>
+                        <span className="ms-2 text-xs">Ingat sesi saya</span>
                     </label>
-                </div>
 
-                <div className="mt-4 flex items-center justify-end">
                     {canResetPassword && (
                         <Link
                             href={route('password.request')}
-                            className="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                            className="text-xs text-emerald-700 hover:underline"
                         >
-                            Forgot your password?
+                            Lupa password?
                         </Link>
                     )}
+                </div>
 
-                    <PrimaryButton className="ms-4" disabled={processing}>
-                        Log in
+                <div>
+                    <PrimaryButton
+                        className="w-full justify-center bg-emerald-700 py-2.5 text-sm font-semibold hover:bg-emerald-800 focus:bg-emerald-800 active:bg-emerald-900"
+                        disabled={processing}
+                    >
+                        {processing ? 'Memproses...' : 'Masuk ke Portal'}
                     </PrimaryButton>
+                </div>
+
+                <div className="pt-2 text-center text-xs text-gray-600">
+                    Belum terdaftar di sistem?{' '}
+                    <Link
+                        href={route('register')}
+                        className="font-semibold text-emerald-700 hover:underline"
+                    >
+                        Daftar Mandiri Disini
+                    </Link>
                 </div>
             </form>
         </GuestLayout>

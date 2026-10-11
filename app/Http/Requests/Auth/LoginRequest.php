@@ -28,7 +28,8 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'string', 'email'],
+            'login' => ['required_without:email', 'string'],
+            'email' => ['nullable', 'string'],
             'password' => ['required', 'string'],
         ];
     }
@@ -42,11 +43,16 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
+        $identifier = trim((string) ($this->input('login') ?: $this->input('email')));
+        $fieldType = filter_var($identifier, FILTER_VALIDATE_EMAIL) ? 'email' : 'nisn';
+
+        if (! Auth::attempt([$fieldType => $identifier, 'password' => $this->input('password')], $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
 
+            $errorField = $this->filled('login') ? 'login' : 'email';
+
             throw ValidationException::withMessages([
-                'email' => trans('auth.failed'),
+                $errorField => trans('auth.failed'),
             ]);
         }
 
@@ -67,9 +73,10 @@ class LoginRequest extends FormRequest
         event(new Lockout($this));
 
         $seconds = RateLimiter::availableIn($this->throttleKey());
+        $errorField = $this->filled('login') ? 'login' : 'email';
 
         throw ValidationException::withMessages([
-            'email' => trans('auth.throttle', [
+            $errorField => trans('auth.throttle', [
                 'seconds' => $seconds,
                 'minutes' => ceil($seconds / 60),
             ]),
@@ -81,6 +88,8 @@ class LoginRequest extends FormRequest
      */
     public function throttleKey(): string
     {
-        return Str::transliterate(Str::lower($this->string('email')).'|'.$this->ip());
+        $identifier = trim((string) ($this->input('login') ?: $this->input('email')));
+
+        return Str::transliterate(Str::lower($identifier).'|'.$this->ip());
     }
 }
