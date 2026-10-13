@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\BeritaController;
 use App\Http\Controllers\ProfileController;
 use App\Models\Berita;
 use App\Models\JawabanKuesioner;
@@ -24,6 +25,9 @@ Route::get('/', function () {
         'beritaTerbaru' => $beritaTerbaru,
     ]);
 });
+
+// Detail Berita & Agenda Publik
+Route::get('/berita/{berita:slug}', [BeritaController::class, 'show'])->name('berita.show');
 
 // Dashboard alumni santri
 Route::get('/dashboard', function (Request $request) {

@@ -310,24 +310,26 @@ export default function Welcome({ auth, beritaTerbaru = [] }) {
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 {displayedBerita.map((berita) => (
                                     <Card key={berita.id} className="flex flex-col justify-between overflow-hidden hover:shadow-md transition-shadow group">
-                                        {berita.thumbnail ? (
-                                            <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-100 dark:bg-slate-800">
-                                                <img
-                                                    src={berita.thumbnail}
-                                                    alt={berita.title}
-                                                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                                                    loading="lazy"
-                                                />
-                                            </div>
-                                        ) : (
-                                            <div className="relative aspect-[16/9] w-full bg-emerald-50 dark:bg-emerald-950/30 flex items-center justify-center text-emerald-600/40">
-                                                <Newspaper className="h-10 w-10" />
-                                            </div>
-                                        )}
+                                        <Link href={route('berita.show', berita.slug)} className="block">
+                                            {berita.thumbnail ? (
+                                                <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-100 dark:bg-slate-800">
+                                                    <img
+                                                        src={berita.thumbnail}
+                                                        alt={berita.title}
+                                                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                                        loading="lazy"
+                                                    />
+                                                </div>
+                                            ) : (
+                                                <div className="relative aspect-[16/9] w-full bg-emerald-50 dark:bg-emerald-950/30 flex items-center justify-center text-emerald-600/40">
+                                                    <Newspaper className="h-10 w-10" />
+                                                </div>
+                                            )}
+                                        </Link>
                                         <CardHeader className="pb-3">
                                             <div className="flex items-center justify-between mb-2">
-                                                <Badge variant={berita.category === 'agenda' ? 'amber' : berita.category === 'pengumuman' ? 'blue' : 'emerald'}>
-                                                    {(berita.category || 'berita').toUpperCase()}
+                                                <Badge variant={berita.category === 'agenda' || berita.type === 'agenda' ? 'amber' : berita.category === 'pengumuman' || berita.type === 'pengumuman' ? 'blue' : 'emerald'}>
+                                                    {(berita.category || berita.type || 'berita').toUpperCase()}
                                                 </Badge>
                                                 <span className="text-[11px] text-slate-400 flex items-center gap-1">
                                                     <Calendar className="h-3 w-3" />
@@ -335,7 +337,9 @@ export default function Welcome({ auth, beritaTerbaru = [] }) {
                                                 </span>
                                             </div>
                                             <CardTitle className="text-base line-clamp-2">
-                                                {berita.title}
+                                                <Link href={route('berita.show', berita.slug)} className="group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors">
+                                                    {berita.title}
+                                                </Link>
                                             </CardTitle>
                                         </CardHeader>
                                         <CardContent className="pb-4">
@@ -343,10 +347,16 @@ export default function Welcome({ auth, beritaTerbaru = [] }) {
                                                 {berita.content}
                                             </p>
                                         </CardContent>
-                                        <CardFooter className="pt-0 border-t border-slate-100 dark:border-slate-800/80 mt-auto pt-3">
-                                            <span className="text-xs font-medium text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
-                                                Penulis: {berita.author?.name || 'Sekretariat MA'}
+                                        <CardFooter className="pt-0 border-t border-slate-100 dark:border-slate-800/80 mt-auto pt-3 flex items-center justify-between">
+                                            <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400 truncate max-w-[130px]">
+                                                {berita.author?.name || 'Sekretariat MA'}
                                             </span>
+                                            <Link
+                                                href={route('berita.show', berita.slug)}
+                                                className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 flex items-center gap-1 hover:underline"
+                                            >
+                                                Baca <ArrowRight className="h-3 w-3" />
+                                            </Link>
                                         </CardFooter>
                                     </Card>
                                 ))}

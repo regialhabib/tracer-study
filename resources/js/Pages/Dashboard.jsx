@@ -378,14 +378,14 @@ export default function Dashboard({ activeKuesioner, hasFilled, beritaList = [] 
                                                 className="group flex flex-col sm:flex-row gap-4 rounded-xl border border-slate-100 dark:border-slate-800 p-3.5 sm:p-4 transition-all hover:bg-slate-50/80 dark:hover:bg-slate-800/40 hover:border-slate-200"
                                             >
                                                 {berita.thumbnail && (
-                                                    <div className="shrink-0 w-full sm:w-36 h-36 sm:h-24 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 relative">
+                                                    <Link href={route('berita.show', berita.slug)} className="shrink-0 w-full sm:w-36 h-36 sm:h-24 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 relative block">
                                                         <img
                                                             src={berita.thumbnail}
                                                             alt={berita.title}
                                                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                                             loading="lazy"
                                                         />
-                                                    </div>
+                                                    </Link>
                                                 )}
                                                 <div className="flex-1 flex flex-col justify-between min-w-0">
                                                     <div>
@@ -414,12 +414,22 @@ export default function Dashboard({ activeKuesioner, hasFilled, beritaList = [] 
                                                             )}
                                                         </div>
 
-                                                        <h4 className="mt-1.5 text-sm font-semibold text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors line-clamp-2">
-                                                            {berita.title}
+                                                        <h4 className="mt-1.5 text-sm font-semibold text-slate-900 dark:text-white line-clamp-2">
+                                                            <Link href={route('berita.show', berita.slug)} className="group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+                                                                {berita.title}
+                                                            </Link>
                                                         </h4>
                                                         <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
                                                             {berita.content}
                                                         </p>
+                                                    </div>
+                                                    <div className="mt-2 flex items-center justify-end">
+                                                        <Link
+                                                            href={route('berita.show', berita.slug)}
+                                                            className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 flex items-center gap-1 hover:underline"
+                                                        >
+                                                            Baca Detail <ArrowRight className="h-3 w-3" />
+                                                        </Link>
                                                     </div>
                                                 </div>
                                             </div>
