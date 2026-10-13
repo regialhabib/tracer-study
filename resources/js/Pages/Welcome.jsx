@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Head, Link } from '@inertiajs/react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
@@ -10,39 +11,78 @@ import {
     Briefcase,
     Calendar,
     ArrowRight,
-    Sparkles,
     ShieldCheck,
     Building2,
     Compass,
     Newspaper,
+    ChevronLeft,
     ChevronRight,
+    Menu,
+    X,
 } from 'lucide-react';
 
 export default function Welcome({ auth, beritaTerbaru = [] }) {
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 3;
+    const totalPages = Math.ceil(beritaTerbaru.length / itemsPerPage) || 1;
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const displayedBerita = beritaTerbaru.slice(startIndex, startIndex + itemsPerPage);
+
+    const handlePrevPage = () => {
+        if (currentPage > 1) {
+            setCurrentPage((prev) => prev - 1);
+        }
+    };
+
+    const handleNextPage = () => {
+        if (currentPage < totalPages) {
+            setCurrentPage((prev) => prev + 1);
+        }
+    };
+
     return (
         <div className="min-h-screen bg-slate-50 text-slate-900 selection:bg-emerald-600 selection:text-white dark:bg-slate-950 dark:text-slate-50">
-            <Head title="Tracer Study MA & Pondok Pesantren" />
+            <Head title="Tracer Study - Pondok Pesantren RIYADHUL AMIEN" />
 
             {/* Navigation Header */}
-            <header className="sticky top-0 z-50 w-full border-b border-slate-200/80 bg-white/80 backdrop-blur-md dark:border-slate-800 dark:bg-slate-950/80">
+            <header className="sticky top-0 z-50 w-full border-b border-slate-200/80 bg-white/90 backdrop-blur-md dark:border-slate-800 dark:bg-slate-950/90">
                 <div className="container mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-                    <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-700 text-white shadow-md shadow-emerald-700/20">
-                            <GraduationCap className="h-5 w-5" />
-                        </div>
-                        <div>
-                            <span className="text-base font-bold tracking-tight block">
+                    <Link href="/" className="flex items-center gap-2.5 sm:gap-3 group min-w-0">
+                        <img
+                            src="/images/logo.webp"
+                            alt="Logo Pondok Pesantren RIYADHUL AMIEN"
+                            className="h-10 w-10 sm:h-11 sm:w-11 object-contain drop-shadow-sm group-hover:scale-105 transition-transform shrink-0"
+                        />
+                        <div className="min-w-0">
+                            <span className="text-sm sm:text-base font-bold tracking-tight block leading-tight truncate">
                                 TRACER STUDY
                             </span>
-                            <span className="text-[11px] font-medium text-emerald-700 dark:text-emerald-400 block tracking-wider uppercase -mt-0.5">
-                                MA Pondok Pesantren
+                            <span className="text-[10px] sm:text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 block tracking-wider uppercase truncate">
+                                PP RIYADHUL AMIEN
                             </span>
                         </div>
-                    </div>
+                    </Link>
 
-                    <nav className="flex items-center gap-2">
+                    {/* Desktop Navigation */}
+                    <nav className="hidden md:flex items-center gap-4">
+                        <a
+                            href="#berita"
+                            className="text-xs font-semibold text-slate-600 hover:text-emerald-700 dark:text-slate-400 dark:hover:text-emerald-400 transition"
+                        >
+                            Kabar & Berita
+                        </a>
+                        <a
+                            href="#manfaat"
+                            className="text-xs font-semibold text-slate-600 hover:text-emerald-700 dark:text-slate-400 dark:hover:text-emerald-400 transition"
+                        >
+                            Manfaat Tracer
+                        </a>
+
+                        <div className="h-4 w-px bg-slate-200 dark:bg-slate-800 mx-1" />
+
                         {auth?.user ? (
-                            <Button asChild className="gap-2 bg-emerald-700 hover:bg-emerald-800 text-white">
+                            <Button asChild size="sm" className="gap-2 bg-emerald-700 hover:bg-emerald-800 text-white shadow-sm">
                                 <Link href={route(auth.user.role === 'admin' ? 'admin.dashboard' : 'dashboard')}>
                                     Buka Dashboard <ArrowRight className="h-4 w-4" />
                                 </Link>
@@ -52,13 +92,87 @@ export default function Welcome({ auth, beritaTerbaru = [] }) {
                                 <Button asChild variant="ghost" size="sm">
                                     <Link href={route('login')}>Masuk</Link>
                                 </Button>
-                                <Button asChild size="sm" className="bg-emerald-700 hover:bg-emerald-800 text-white">
+                                <Button asChild size="sm" className="bg-emerald-700 hover:bg-emerald-800 text-white shadow-xs">
                                     <Link href={route('register')}>Daftar Mandiri</Link>
                                 </Button>
                             </>
                         )}
                     </nav>
+
+                    {/* Mobile Quick Action & Hamburger */}
+                    <div className="flex md:hidden items-center gap-1.5 sm:gap-2">
+                        {auth?.user ? (
+                            <Button asChild size="sm" className="bg-emerald-700 hover:bg-emerald-800 text-white text-xs h-8 px-2.5">
+                                <Link href={route(auth.user.role === 'admin' ? 'admin.dashboard' : 'dashboard')}>
+                                    Dashboard
+                                </Link>
+                            </Button>
+                        ) : (
+                            <Button asChild size="sm" variant="ghost" className="text-xs h-8 px-2.5 font-semibold text-emerald-800 dark:text-emerald-300">
+                                <Link href={route('login')}>
+                                    Masuk
+                                </Link>
+                            </Button>
+                        )}
+
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                            className="h-9 w-9 text-slate-600 hover:text-slate-900 dark:text-slate-400"
+                            aria-label="Toggle Menu"
+                        >
+                            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+                        </Button>
+                    </div>
                 </div>
+
+                {/* Mobile Dropdown Menu Drawer */}
+                {mobileMenuOpen && (
+                    <div className="border-t border-b border-slate-200/90 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md md:hidden px-4 py-4 space-y-3 shadow-xl shadow-slate-900/10 animate-in slide-in-from-top-2 duration-200">
+                        <div className="space-y-1">
+                            <a
+                                href="#berita"
+                                onClick={() => setMobileMenuOpen(false)}
+                                className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                            >
+                                <Newspaper className="h-4 w-4 text-emerald-600" />
+                                <span>Kabar & Berita Pesantren</span>
+                            </a>
+                            <a
+                                href="#manfaat"
+                                onClick={() => setMobileMenuOpen(false)}
+                                className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                            >
+                                <GraduationCap className="h-4 w-4 text-emerald-600" />
+                                <span>Manfaat Partisipasi Tracer Study</span>
+                            </a>
+                        </div>
+
+                        <div className="border-t border-slate-100 dark:border-slate-800/80 pt-3 space-y-2">
+                            {auth?.user ? (
+                                <Button asChild className="w-full justify-center bg-emerald-700 hover:bg-emerald-800 text-white font-semibold shadow-sm">
+                                    <Link href={route(auth.user.role === 'admin' ? 'admin.dashboard' : 'dashboard')}>
+                                        Buka Dashboard Saya <ArrowRight className="h-4 w-4 ml-1" />
+                                    </Link>
+                                </Button>
+                            ) : (
+                                <>
+                                    <Button asChild className="w-full justify-center bg-emerald-700 hover:bg-emerald-800 text-white font-semibold shadow-sm">
+                                        <Link href={route('register')}>
+                                            Registrasi Mandiri Alumni
+                                        </Link>
+                                    </Button>
+                                    <Button asChild variant="outline" className="w-full justify-center font-semibold">
+                                        <Link href={route('login')}>
+                                            Masuk dengan NISN
+                                        </Link>
+                                    </Button>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                )}
             </header>
 
             {/* Hero Section */}
@@ -68,8 +182,8 @@ export default function Welcome({ auth, beritaTerbaru = [] }) {
 
                 <div className="container mx-auto max-w-5xl px-4 text-center sm:px-6 lg:px-8">
                     <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3.5 py-1 text-xs font-semibold text-emerald-800 dark:border-emerald-900/50 dark:bg-emerald-950/50 dark:text-emerald-300 mb-6">
-                        <Sparkles className="h-3.5 w-3.5 text-emerald-600" />
-                        Portal Resmi Penelusuran Alumni Madrasah Aliyah
+                        <img src="/images/logo.webp" alt="Logo" className="h-4 w-4 object-contain" />
+                        Portal Resmi Penelusuran Alumni Pondok Pesantren RIYADHUL AMIEN
                     </div>
 
                     <h1 className="text-3xl font-extrabold tracking-tight sm:text-5xl md:text-6xl text-slate-900 dark:text-slate-50 leading-tight">
@@ -172,7 +286,7 @@ export default function Welcome({ auth, beritaTerbaru = [] }) {
             </section>
 
             {/* News and Announcements Section */}
-            <section className="py-16">
+            <section id="berita" className="py-16">
                 <div className="container mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
                     <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
                         <div>
@@ -184,39 +298,122 @@ export default function Welcome({ auth, beritaTerbaru = [] }) {
                                 Informasi terbaru kegiatan madrasah, silaturahmi alumni, dan agenda akbar
                             </p>
                         </div>
+                        {beritaTerbaru && beritaTerbaru.length > 0 && (
+                            <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                                Total {beritaTerbaru.length} informasi diterbitkan
+                            </span>
+                        )}
                     </div>
 
                     {beritaTerbaru && beritaTerbaru.length > 0 ? (
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            {beritaTerbaru.map((berita) => (
-                                <Card key={berita.id} className="flex flex-col justify-between overflow-hidden hover:shadow-md transition-shadow">
-                                    <CardHeader className="pb-3">
-                                        <div className="flex items-center justify-between mb-2">
-                                            <Badge variant={berita.category === 'agenda' ? 'amber' : berita.category === 'pengumuman' ? 'blue' : 'emerald'}>
-                                                {berita.category.toUpperCase()}
-                                            </Badge>
-                                            <span className="text-[11px] text-slate-400 flex items-center gap-1">
-                                                <Calendar className="h-3 w-3" />
-                                                {berita.published_at ? new Date(berita.published_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}
+                        <>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                {displayedBerita.map((berita) => (
+                                    <Card key={berita.id} className="flex flex-col justify-between overflow-hidden hover:shadow-md transition-shadow group">
+                                        {berita.thumbnail ? (
+                                            <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-100 dark:bg-slate-800">
+                                                <img
+                                                    src={berita.thumbnail}
+                                                    alt={berita.title}
+                                                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                                    loading="lazy"
+                                                />
+                                            </div>
+                                        ) : (
+                                            <div className="relative aspect-[16/9] w-full bg-emerald-50 dark:bg-emerald-950/30 flex items-center justify-center text-emerald-600/40">
+                                                <Newspaper className="h-10 w-10" />
+                                            </div>
+                                        )}
+                                        <CardHeader className="pb-3">
+                                            <div className="flex items-center justify-between mb-2">
+                                                <Badge variant={berita.category === 'agenda' ? 'amber' : berita.category === 'pengumuman' ? 'blue' : 'emerald'}>
+                                                    {(berita.category || 'berita').toUpperCase()}
+                                                </Badge>
+                                                <span className="text-[11px] text-slate-400 flex items-center gap-1">
+                                                    <Calendar className="h-3 w-3" />
+                                                    {berita.published_at ? new Date(berita.published_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}
+                                                </span>
+                                            </div>
+                                            <CardTitle className="text-base line-clamp-2">
+                                                {berita.title}
+                                            </CardTitle>
+                                        </CardHeader>
+                                        <CardContent className="pb-4">
+                                            <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-3">
+                                                {berita.content}
+                                            </p>
+                                        </CardContent>
+                                        <CardFooter className="pt-0 border-t border-slate-100 dark:border-slate-800/80 mt-auto pt-3">
+                                            <span className="text-xs font-medium text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
+                                                Penulis: {berita.author?.name || 'Sekretariat MA'}
                                             </span>
+                                        </CardFooter>
+                                    </Card>
+                                ))}
+                            </div>
+
+                            {/* Pagination Controls */}
+                            {totalPages > 1 && (
+                                <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-slate-200/80 dark:border-slate-800 pt-6">
+                                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                                        Menampilkan{' '}
+                                        <span className="font-semibold text-slate-700 dark:text-slate-200">
+                                            {startIndex + 1}
+                                        </span>{' '}
+                                        -{' '}
+                                        <span className="font-semibold text-slate-700 dark:text-slate-200">
+                                            {Math.min(startIndex + itemsPerPage, beritaTerbaru.length)}
+                                        </span>{' '}
+                                        dari{' '}
+                                        <span className="font-semibold text-slate-700 dark:text-slate-200">
+                                            {beritaTerbaru.length}
+                                        </span>{' '}
+                                        berita & agenda
+                                    </p>
+
+                                    <div className="flex items-center gap-2">
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={handlePrevPage}
+                                            disabled={currentPage === 1}
+                                            className="gap-1 text-xs"
+                                        >
+                                            <ChevronLeft className="h-4 w-4" />
+                                            Sebelumnya
+                                        </Button>
+
+                                        <div className="flex items-center gap-1">
+                                            {Array.from({ length: totalPages }).map((_, idx) => (
+                                                <button
+                                                    key={idx}
+                                                    type="button"
+                                                    onClick={() => setCurrentPage(idx + 1)}
+                                                    className={`h-8 w-8 rounded-lg text-xs font-semibold transition-all ${
+                                                        currentPage === idx + 1
+                                                            ? 'bg-emerald-700 text-white shadow-sm'
+                                                            : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'
+                                                    }`}
+                                                >
+                                                    {idx + 1}
+                                                </button>
+                                            ))}
                                         </div>
-                                        <CardTitle className="text-base line-clamp-2">
-                                            {berita.title}
-                                        </CardTitle>
-                                    </CardHeader>
-                                    <CardContent className="pb-4">
-                                        <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-3">
-                                            {berita.content}
-                                        </p>
-                                    </CardContent>
-                                    <CardFooter className="pt-0 border-t border-slate-100 dark:border-slate-800/80 mt-auto pt-3">
-                                        <span className="text-xs font-medium text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
-                                            Penulis: {berita.author?.name || 'Sekretariat MA'}
-                                        </span>
-                                    </CardFooter>
-                                </Card>
-                            ))}
-                        </div>
+
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={handleNextPage}
+                                            disabled={currentPage === totalPages}
+                                            className="gap-1 text-xs"
+                                        >
+                                            Selanjutnya
+                                            <ChevronRight className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                </div>
+                            )}
+                        </>
                     ) : (
                         <Card className="text-center p-8 bg-white dark:bg-slate-900">
                             <Newspaper className="h-10 w-10 text-slate-400 mx-auto mb-2" />
@@ -251,14 +448,18 @@ export default function Welcome({ auth, beritaTerbaru = [] }) {
             {/* Footer */}
             <footer className="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-8">
                 <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
-                    <div className="flex items-center gap-2">
-                        <GraduationCap className="h-4 w-4 text-emerald-700" />
+                    <div className="flex items-center gap-2.5">
+                        <img
+                            src="/images/logo.webp"
+                            alt="Logo Pondok Pesantren RIYADHUL AMIEN"
+                            className="h-6 w-6 object-contain"
+                        />
                         <span className="font-semibold text-slate-700 dark:text-slate-300">
-                            Tracer Study Madrasah Aliyah &bull; Pondok Pesantren
+                            Tracer Study &bull; Pondok Pesantren RIYADHUL AMIEN
                         </span>
                     </div>
                     <p>
-                        &copy; {new Date().getFullYear()} Yayasan Pondok Pesantren. Seluruh hak cipta dilindungi.
+                        &copy; {new Date().getFullYear()} Pondok Pesantren RIYADHUL AMIEN. Seluruh hak cipta dilindungi.
                     </p>
                 </div>
             </footer>

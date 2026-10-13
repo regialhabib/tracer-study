@@ -13,7 +13,7 @@ use Inertia\Inertia;
 
 Route::get('/', function () {
     $beritaTerbaru = Schema::hasTable('berita')
-        ? Berita::published()->latest()->take(3)->get()
+        ? Berita::published()->latest()->get()
         : collect();
 
     return Inertia::render('Welcome', [

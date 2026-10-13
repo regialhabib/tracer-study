@@ -26,3 +26,7 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 /docs
+.impeccable/
+DESIGN.md
+PRODUCT.md
+*_output.txt

@@ -17,8 +17,19 @@ export default {
     	extend: {
     		fontFamily: {
     			sans: [
-    				'Figtree',
+    				'"Plus Jakarta Sans"',
+    				'Geist',
     				...defaultTheme.fontFamily.sans
+    			],
+    			serif: [
+    				'"Plus Jakarta Sans"',
+    				'Geist',
+    				...defaultTheme.fontFamily.sans
+    			],
+    			mono: [
+    				'"JetBrains Mono"',
+    				'Geist Mono',
+    				...defaultTheme.fontFamily.mono
     			]
     		},
     		colors: {

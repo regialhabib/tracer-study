@@ -76,15 +76,17 @@ export default function AdminLayout({ header, children }) {
                 {/* Brand / Logo Header */}
                 <div className="flex h-16 items-center justify-between border-b border-slate-100 dark:border-slate-800/80 px-6">
                     <Link href={route('admin.dashboard')} className="flex items-center gap-2.5">
-                        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-700 text-white shadow-sm shadow-emerald-700/20">
-                            <GraduationCap className="h-5 w-5" />
-                        </div>
+                        <img
+                            src="/images/logo.webp"
+                            alt="Logo PP RIYADHUL AMIEN"
+                            className="h-9 w-9 object-contain drop-shadow-sm"
+                        />
                         <div>
                             <span className="block text-sm font-bold text-slate-900 dark:text-slate-100 leading-tight">
                                 TRACER STUDY
                             </span>
                             <span className="block text-[10px] font-semibold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
-                                Administrator MA
+                                PP RIYADHUL AMIEN
                             </span>
                         </div>
                     </Link>
@@ -183,7 +185,8 @@ export default function AdminLayout({ header, children }) {
                         </Badge>
                         <Button asChild variant="outline" size="sm" className="gap-1.5 text-xs">
                             <Link href={route('dashboard')}>
-                                <span>Lihat Portal Santri</span>
+                                <span className="hidden sm:inline">Lihat Portal Santri</span>
+                                <span className="sm:hidden">Portal Santri</span>
                                 <ExternalLink className="h-3.5 w-3.5 text-slate-400" />
                             </Link>
                         </Button>

@@ -9,17 +9,19 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-emerald-700 text-white shadow hover:bg-emerald-800 focus-visible:ring-emerald-700 active:scale-[0.99]",
-        emerald:
-          "bg-emerald-600 text-white shadow hover:bg-emerald-700 focus-visible:ring-emerald-600 active:scale-[0.99]",
+          "bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-primary active:scale-[0.99]",
+        pine:
+          "bg-emerald-900 text-emerald-50 hover:bg-emerald-950 dark:bg-emerald-800 dark:hover:bg-emerald-700 active:scale-[0.99]",
+        rubric:
+          "bg-accent text-accent-foreground hover:bg-accent/90 active:scale-[0.99]",
         destructive:
-          "bg-red-600 text-white shadow-sm hover:bg-red-700 focus-visible:ring-red-600",
+          "bg-destructive text-destructive-foreground hover:bg-destructive/90 focus-visible:ring-destructive",
         outline:
-          "border border-input bg-background shadow-sm hover:bg-muted hover:text-foreground",
+          "border border-border bg-card text-foreground hover:bg-secondary active:scale-[0.99]",
         secondary:
-          "bg-slate-100 text-slate-900 shadow-sm hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700",
+          "border border-border/60 bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-muted hover:text-foreground",
-        link: "text-emerald-700 underline-offset-4 hover:underline p-0 h-auto",
+        link: "text-primary underline-offset-4 hover:underline p-0 h-auto",
       },
       size: {
         default: "h-9 px-4 py-2",

@@ -1,5 +1,4 @@
 import { Link } from '@inertiajs/react';
-import { GraduationCap } from 'lucide-react';
 
 export default function GuestLayout({ children }) {
     return (
@@ -12,15 +11,17 @@ export default function GuestLayout({ children }) {
             <div className="relative z-10 w-full max-w-md">
                 <div className="flex flex-col items-center mb-6">
                     <Link href="/" className="group flex items-center gap-3">
-                        <div className="h-12 w-12 rounded-xl bg-emerald-700 text-white flex items-center justify-center shadow-lg shadow-emerald-700/20 group-hover:scale-105 transition-all">
-                            <GraduationCap className="h-6 w-6" />
-                        </div>
+                        <img
+                            src="/images/logo.webp"
+                            alt="Logo Pondok Pesantren RIYADHUL AMIEN"
+                            className="h-14 w-14 object-contain group-hover:scale-105 transition-all drop-shadow-sm"
+                        />
                         <div className="text-left">
-                            <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100 block">
+                            <span className="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100 block leading-tight">
                                 TRACER STUDY
                             </span>
-                            <span className="text-xs font-medium text-emerald-700 dark:text-emerald-400 block tracking-wider uppercase">
-                                MA Pondok Pesantren
+                            <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 block tracking-wider uppercase">
+                                PP RIYADHUL AMIEN
                             </span>
                         </div>
                     </Link>
@@ -29,7 +30,7 @@ export default function GuestLayout({ children }) {
                 {children}
 
                 <p className="mt-8 text-center text-xs text-slate-500 dark:text-slate-400">
-                    &copy; {new Date().getFullYear()} Tracer Study Madrasah Aliyah &bull; Pondok Pesantren
+                    &copy; {new Date().getFullYear()} Tracer Study &bull; Pondok Pesantren RIYADHUL AMIEN
                 </p>
             </div>
         </div>
