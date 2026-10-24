@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Models\User;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -57,6 +58,30 @@ class LoginRequest extends FormRequest
         }
 
         RateLimiter::clear($this->throttleKey());
+
+        $this->ensureAccountIsNotDeactivated();
+    }
+
+    /**
+     * Tolak akun nonaktif setelah kredensial benar, sambil menampilkan alasan penolakan (AUTH-04).
+     *
+     * Akun `pending` tetap boleh masuk; pengalihannya ke halaman tunggu diatur controller & middleware.
+     *
+     * @throws ValidationException
+     */
+    private function ensureAccountIsNotDeactivated(): void
+    {
+        $user = Auth::user();
+
+        if (! $user instanceof User || ! $user->isInactive()) {
+            return;
+        }
+
+        Auth::guard('web')->logout();
+
+        throw ValidationException::withMessages([
+            $this->filled('login') ? 'login' : 'email' => $user->deactivatedAccountMessage(),
+        ]);
     }
 
     /**

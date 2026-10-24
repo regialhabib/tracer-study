@@ -3,23 +3,38 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Enums\AccountStatus;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'nisn', 'email', 'password', 'role', 'status', 'first_login'])]
+#[Fillable([
+    'name',
+    'nisn',
+    'email',
+    'password',
+    'role',
+    'status',
+    'first_login',
+    'rejection_reason',
+    'verified_at',
+    'verified_by',
+    'data_consent_at',
+])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, SoftDeletes;
 
     /**
      * Get the attributes that should be cast.
@@ -31,8 +46,19 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'status' => AccountStatus::class,
             'first_login' => 'boolean',
+            'verified_at' => 'datetime',
+            'data_consent_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Admin yang memverifikasi (menyetujui/menolak) pendaftaran akun ini.
+     */
+    public function verifiedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'verified_by');
     }
 
     /**
@@ -100,6 +126,42 @@ class User extends Authenticatable
     }
 
     /**
+     * Mengecek apakah akun berstatus aktif.
+     */
+    public function isActive(): bool
+    {
+        return $this->status === AccountStatus::Active;
+    }
+
+    /**
+     * Mengecek apakah akun masih menunggu verifikasi admin.
+     */
+    public function isPending(): bool
+    {
+        return $this->status === AccountStatus::Pending;
+    }
+
+    /**
+     * Mengecek apakah akun dinonaktifkan (ditolak atau dinonaktifkan admin).
+     */
+    public function isInactive(): bool
+    {
+        return $this->status === AccountStatus::Inactive;
+    }
+
+    /**
+     * Pesan yang ditampilkan saat akun nonaktif mencoba masuk, beserta alasan penolakan bila ada.
+     */
+    public function deactivatedAccountMessage(): string
+    {
+        $reason = trim((string) $this->rejection_reason);
+
+        return $reason === ''
+            ? __('auth.inactive')
+            : __('auth.inactive_with_reason', ['reason' => $reason]);
+    }
+
+    /**
      * Scope query pengguna dengan peran Admin.
      */
     #[Scope]
@@ -123,6 +185,24 @@ class User extends Authenticatable
     #[Scope]
     protected function active(Builder $query): Builder
     {
-        return $query->where('status', 'active');
+        return $query->where('status', AccountStatus::Active);
+    }
+
+    /**
+     * Scope query pengguna yang menunggu verifikasi admin.
+     */
+    #[Scope]
+    protected function pending(Builder $query): Builder
+    {
+        return $query->where('status', AccountStatus::Pending);
+    }
+
+    /**
+     * Scope query pengguna yang dinonaktifkan.
+     */
+    #[Scope]
+    protected function inactive(Builder $query): Builder
+    {
+        return $query->where('status', AccountStatus::Inactive);
     }
 }

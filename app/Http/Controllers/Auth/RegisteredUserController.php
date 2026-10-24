@@ -3,12 +3,10 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
+use App\Http\Requests\Auth\RegisterAlumniRequest;
 use App\Services\Auth\AlumniRegistrationService;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -26,29 +24,20 @@ class RegisteredUserController extends Controller
      */
     public function create(): Response
     {
-        return Inertia::render('Auth/Register');
+        return Inertia::render('Auth/Register', [
+            'consent' => config('tracer.consent_text'),
+        ]);
     }
 
     /**
-     * Handle an incoming registration request.
+     * Mendaftarkan alumni secara mandiri lalu mengarahkannya ke halaman "Menunggu Verifikasi".
      */
-    public function store(Request $request): RedirectResponse
+    public function store(RegisterAlumniRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'nisn' => ['nullable', 'string', 'max:20', 'unique:'.User::class],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            'password' => ['required', 'confirmed', Password::defaults()],
-            'gender' => ['nullable', 'in:L,P'],
-            'major' => ['nullable', 'string', 'max:100'],
-            'graduation_year' => ['nullable', 'integer', 'min:2000', 'max:'.(date('Y') + 1)],
-            'phone_number' => ['nullable', 'string', 'max:25'],
-        ]);
-
-        $user = $this->registrationService->register($validated);
+        $user = $this->registrationService->register($request->validated());
 
         Auth::login($user);
 
-        return redirect(route('dashboard', absolute: false));
+        return redirect()->route('verification.pending');
     }
 }

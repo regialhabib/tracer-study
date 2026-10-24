@@ -3,12 +3,10 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
+use App\Http\Requests\Auth\CompleteFirstLoginRequest;
 use App\Services\Auth\FirstLoginService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
-use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -22,7 +20,7 @@ class FirstLoginController extends Controller
     ) {}
 
     /**
-     * Menampilkan form onboarding bagi santri saat login pertama kali.
+     * Menampilkan form onboarding saat login pertama kali.
      */
     public function show(Request $request): Response|RedirectResponse
     {
@@ -34,31 +32,20 @@ class FirstLoginController extends Controller
 
         return Inertia::render('Auth/FirstLogin', [
             'user' => $user->load('profile'),
+            'isAdmin' => $user->isAdmin(),
+            'consent' => $user->isAlumni() ? config('tracer.consent_text') : null,
         ]);
     }
 
     /**
-     * Memperbarui email, nomor WhatsApp, dan password baru santri via FirstLoginService.
+     * Menyimpan data onboarding (email, WhatsApp, persetujuan data, kata sandi baru) via FirstLoginService.
      */
-    public function update(Request $request): RedirectResponse
+    public function update(CompleteFirstLoginRequest $request): RedirectResponse
     {
-        $user = $request->user();
+        $user = $this->firstLoginService->completeOnboarding($request->user(), $request->validated());
 
-        $validated = $request->validate([
-            'email' => [
-                'required',
-                'string',
-                'lowercase',
-                'email',
-                'max:255',
-                Rule::unique(User::class)->ignore($user->id),
-            ],
-            'phone_number' => ['nullable', 'string', 'max:25'],
-            'password' => ['required', 'confirmed', Password::defaults()],
-        ]);
-
-        $this->firstLoginService->completeOnboarding($user, $validated);
-
-        return redirect()->route('dashboard')->with('status', 'Alhamdulillah! Akun dan password baru Anda berhasil diperbarui.');
+        return redirect()
+            ->route($user->isAdmin() ? 'admin.dashboard' : 'dashboard')
+            ->with('status', 'Alhamdulillah! Akun dan kata sandi baru Anda berhasil disimpan.');
     }
 }

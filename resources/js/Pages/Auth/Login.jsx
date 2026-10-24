@@ -2,7 +2,7 @@ import { Alert, AlertDescription, Button, Checkbox, FieldError, FieldHint, Input
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 
-export default function Login({ status, canResetPassword }) {
+export default function Login({ status }) {
     const { data, setData, post, processing, errors, reset } = useForm({
         login: '',
         password: '',
@@ -59,17 +59,7 @@ export default function Login({ status, canResetPassword }) {
                     </div>
 
                     <div className="flex flex-col gap-1.5">
-                        <div className="flex items-center justify-between gap-3">
-                            <Label htmlFor="password">Kata Sandi</Label>
-                            {canResetPassword && (
-                                <Link
-                                    href={route('password.request')}
-                                    className="rounded-sm text-sm font-semibold text-brand-blue underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                                >
-                                    Lupa kata sandi?
-                                </Link>
-                            )}
-                        </div>
+                        <Label htmlFor="password">Kata Sandi</Label>
                         <Input
                             id="password"
                             type="password"
@@ -77,10 +67,13 @@ export default function Login({ status, canResetPassword }) {
                             value={data.password}
                             autoComplete="current-password"
                             invalid={Boolean(errors.password)}
-                            aria-describedby={errors.password ? 'password-error' : undefined}
+                            aria-describedby={errors.password ? 'password-hint password-error' : 'password-hint'}
                             onChange={(e) => setData('password', e.target.value)}
                         />
                         <FieldError id="password-error" message={errors.password} />
+                        <FieldHint id="password-hint">
+                            Lupa kata sandi? Hubungi admin madrasah untuk reset.
+                        </FieldHint>
                     </div>
 
                     <Checkbox

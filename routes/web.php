@@ -1,13 +1,10 @@
 <?php
 
-use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Alumni\BerandaController;
 use App\Http\Controllers\BeritaController;
 use App\Http\Controllers\ProfileController;
 use App\Models\Berita;
-use App\Models\JawabanKuesioner;
-use App\Models\Kuesioner;
 use Illuminate\Foundation\Application;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
 use Inertia\Inertia;
@@ -29,41 +26,19 @@ Route::get('/', function () {
 // Detail Berita & Agenda Publik
 Route::get('/berita/{berita:slug}', [BeritaController::class, 'show'])->name('berita.show');
 
-// Dashboard alumni santri
-Route::get('/dashboard', function (Request $request) {
-    $user = $request->user();
+// Area alumni (dan profil pengguna) — hanya akun aktif yang sudah menyelesaikan onboarding
+Route::middleware(['auth', 'active', 'not_first_login'])->group(function () {
+    Route::get('/dashboard', [BerandaController::class, 'index'])->name('dashboard');
 
-    if ($user->isAdmin()) {
-        return redirect()->route('admin.dashboard');
-    }
-
-    $activeKuesioner = Kuesioner::withCount('pertanyaan')->where('is_active', true)->first();
-    $hasFilled = false;
-    if ($activeKuesioner) {
-        $hasFilled = JawabanKuesioner::where('kuesioner_id', $activeKuesioner->id)
-            ->where('user_id', $user->id)
-            ->exists();
-    }
-
-    $beritaList = Berita::published()->latest()->take(3)->get();
-
-    return Inertia::render('Dashboard', [
-        'activeKuesioner' => $activeKuesioner,
-        'hasFilled' => $hasFilled,
-        'beritaList' => $beritaList,
-    ]);
-})->middleware(['auth', 'not_first_login'])->name('dashboard');
-
-// Rute khusus administrator
-Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
-});
-
-// Profil pengguna
-Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+
+// Panel admin — rute per modul ada di routes/admin.php dan routes/admin/*.php
+Route::middleware(['auth', 'active', 'not_first_login', 'role:admin'])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(base_path('routes/admin.php'));
 
 require __DIR__.'/auth.php';

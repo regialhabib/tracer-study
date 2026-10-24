@@ -2,6 +2,8 @@
 
 namespace App\Services\Auth;
 
+use App\Enums\AccountStatus;
+use App\Enums\AlumniStatus;
 use App\Models\AlumniProfile;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
@@ -13,7 +15,9 @@ class AlumniRegistrationService
     /**
      * Mendaftarkan santri alumni baru secara mandiri beserta data profilnya.
      *
-     * @param  array{name: string, email: string, password: string, nisn?: ?string, gender?: ?string, major?: ?string, graduation_year?: ?int, phone_number?: ?string}  $data
+     * Akun baru berstatus `pending` sampai diverifikasi admin (AUTH-03).
+     *
+     * @param  array{name: string, email: string, password: string, phone_number: string, nisn?: ?string, gender?: ?string, major?: ?string, graduation_year?: ?int, data_consent?: mixed}  $data
      */
     public function register(array $data): User
     {
@@ -24,8 +28,9 @@ class AlumniRegistrationService
                 'email' => $data['email'],
                 'password' => Hash::make($data['password']),
                 'role' => 'alumni',
-                'status' => 'active',
+                'status' => AccountStatus::Pending,
                 'first_login' => false,
+                'data_consent_at' => now(),
             ]);
 
             $graduationYear = (int) ($data['graduation_year'] ?? date('Y'));
@@ -37,8 +42,8 @@ class AlumniRegistrationService
                 'major' => $data['major'] ?? 'Keagamaan (PK)',
                 'entry_year' => $entryYear,
                 'graduation_year' => $graduationYear,
-                'phone_number' => $data['phone_number'] ?? null,
-                'current_status' => 'mencari_kerja',
+                'phone_number' => $data['phone_number'],
+                'current_status' => AlumniStatus::MencariKerja->value,
             ]);
 
             event(new Registered($user));

@@ -8,6 +8,7 @@ use App\Http\Controllers\Auth\FirstLoginController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
+use App\Http\Controllers\Auth\PendingVerificationController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
@@ -37,10 +38,15 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
+    Route::get('verification-pending', PendingVerificationController::class)
+        ->name('verification.pending');
+
     Route::get('first-login', [FirstLoginController::class, 'show'])
+        ->middleware('active')
         ->name('first-login.prompt');
 
     Route::post('first-login', [FirstLoginController::class, 'update'])
+        ->middleware('active')
         ->name('first-login.update');
 
     Route::get('verify-email', EmailVerificationPromptController::class)

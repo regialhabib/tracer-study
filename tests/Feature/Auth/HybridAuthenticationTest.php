@@ -86,6 +86,7 @@ class HybridAuthenticationTest extends TestCase
         $response = $this->actingAs($user)->post('/first-login', [
             'email' => 'santri.baru@alumni.test',
             'phone_number' => '081234567899',
+            'data_consent' => true,
             'password' => 'PasswordBaru123!',
             'password_confirmation' => 'PasswordBaru123!',
         ]);
@@ -120,16 +121,18 @@ class HybridAuthenticationTest extends TestCase
             'major' => 'Keagamaan (PK)',
             'graduation_year' => 2024,
             'phone_number' => '089988776655',
+            'data_consent' => true,
             'password' => 'Password123!',
             'password_confirmation' => 'Password123!',
         ]);
 
-        $response->assertRedirect('/dashboard');
+        $response->assertRedirect(route('verification.pending'));
 
         $this->assertDatabaseHas('users', [
             'nisn' => '0058887777',
             'email' => 'mandiri@alumni.test',
             'role' => 'alumni',
+            'status' => 'pending',
             'first_login' => false,
         ]);
 

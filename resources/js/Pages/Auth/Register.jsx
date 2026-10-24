@@ -1,3 +1,4 @@
+import DataConsentField from '@/Components/DataConsentField';
 import { Button, FieldError, FieldHint, Input, Label, Select } from '@/Components/ui';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
@@ -11,7 +12,7 @@ function describedBy(hintId, errorId, error) {
     return ids.length > 0 ? ids.join(' ') : undefined;
 }
 
-export default function Register() {
+export default function Register({ consent }) {
     const currentYear = new Date().getFullYear();
 
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -24,6 +25,7 @@ export default function Register() {
         phone_number: '',
         password: '',
         password_confirmation: '',
+        data_consent: false,
     });
 
     const submit = (e) => {
@@ -173,8 +175,12 @@ export default function Register() {
                     </div>
 
                     <div className="flex flex-col gap-1.5">
-                        <Label htmlFor="phone_number">Nomor WhatsApp</Label>
-                        <FieldHint id="phone_number-hint">Opsional, agar kami mudah menghubungi Anda.</FieldHint>
+                        <Label htmlFor="phone_number" required>
+                            Nomor WhatsApp
+                        </Label>
+                        <FieldHint id="phone_number-hint">
+                            Admin akan mengabari hasil verifikasi akun Anda lewat WhatsApp.
+                        </FieldHint>
                         <Input
                             id="phone_number"
                             type="tel"
@@ -186,6 +192,7 @@ export default function Register() {
                             invalid={Boolean(errors.phone_number)}
                             aria-describedby={describedBy('phone_number-hint', 'phone_number-error', errors.phone_number)}
                             onChange={(e) => setData('phone_number', e.target.value)}
+                            required
                         />
                         <FieldError id="phone_number-error" message={errors.phone_number} />
                     </div>
@@ -230,6 +237,13 @@ export default function Register() {
                         />
                         <FieldError id="password_confirmation-error" message={errors.password_confirmation} />
                     </div>
+
+                    <DataConsentField
+                        consent={consent}
+                        checked={data.data_consent}
+                        onChange={(checked) => setData('data_consent', checked)}
+                        error={errors.data_consent}
+                    />
 
                     <Button type="submit" size="lg" className="mt-2 w-full" loading={processing} loadingText="Mendaftarkan…">
                         Daftar Akun

@@ -16,5 +16,7 @@ return [
     'failed' => 'Data login yang Anda masukkan tidak cocok dengan data kami.',
     'password' => 'Kata sandi yang Anda masukkan salah.',
     'throttle' => 'Terlalu banyak percobaan masuk. Silakan coba lagi dalam :seconds detik.',
+    'inactive' => 'Akun Anda dinonaktifkan. Silakan hubungi admin madrasah.',
+    'inactive_with_reason' => 'Akun Anda dinonaktifkan. Alasan: :reason',
 
 ];
