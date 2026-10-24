@@ -10,8 +10,13 @@
 |
 */
 
+use App\Http\Controllers\Admin\ImportAlumniController;
 use Illuminate\Support\Facades\Route;
 
-Route::prefix('alumni/import')->name('alumni.import.')->group(function () {
-    //
+Route::prefix('alumni/import')->name('alumni.import.')->controller(ImportAlumniController::class)->group(function () {
+    Route::get('/', 'create')->name('create');
+    Route::get('template', 'template')->name('template');
+    Route::post('preview', 'preview')->name('preview');
+    Route::post('confirm', 'store')->name('store');
+    Route::get('report/{token}', 'report')->name('report');
 });

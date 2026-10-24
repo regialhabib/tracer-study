@@ -66,6 +66,17 @@ class RegistrationTest extends TestCase
         $this->assertDatabaseMissing('users', ['email' => 'test@example.com']);
     }
 
+    public function test_registration_with_imported_nisn_points_alumni_to_login(): void
+    {
+        User::factory()->alumni()->firstLogin()->create(['nisn' => '0051234567']);
+
+        $response = $this->post('/register', [...$this->validPayload(), 'nisn' => '0051234567']);
+
+        $response->assertSessionHasErrors('nisn');
+        $this->assertStringContainsString('Silakan masuk dengan NISN', session('errors')->first('nisn'));
+        $this->assertDatabaseMissing('users', ['email' => 'test@example.com']);
+    }
+
     /**
      * @return array<string, mixed>
      */

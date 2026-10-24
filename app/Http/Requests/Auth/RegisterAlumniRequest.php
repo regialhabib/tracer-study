@@ -47,6 +47,7 @@ class RegisterAlumniRequest extends FormRequest
     {
         return [
             'data_consent.accepted' => 'Anda perlu menyetujui penggunaan data untuk melanjutkan.',
+            'nisn.unique' => 'NISN ini sudah terdaftar. Silakan masuk dengan NISN dan kata sandi awal berupa tanggal lahir (ddmmyyyy). Hubungi admin bila tidak bisa masuk.',
         ];
     }
 }

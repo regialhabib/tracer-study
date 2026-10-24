@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -38,6 +39,23 @@ class HandleInertiaRequests extends Middleware
                 'status' => session('status'),
                 'error' => session('error'),
             ],
+            'adminBadges' => fn (): ?array => $this->adminBadges($request),
+        ];
+    }
+
+    /**
+     * Angka penanda di sidebar admin (mis. antrean verifikasi). Null untuk non-admin.
+     *
+     * @return array{verifikasi: int}|null
+     */
+    private function adminBadges(Request $request): ?array
+    {
+        if (! $request->user()?->isAdmin()) {
+            return null;
+        }
+
+        return [
+            'verifikasi' => User::query()->alumni()->pending()->count(),
         ];
     }
 }

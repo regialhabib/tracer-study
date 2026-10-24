@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\AvatarUpdateRequest;
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Services\Alumni\ProfilService;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -13,14 +15,36 @@ use Inertia\Response;
 
 class ProfileController extends Controller
 {
+    public function __construct(private readonly ProfilService $profilService) {}
+
     /**
      * Display the user's profile form.
      */
     public function edit(Request $request): Response
     {
+        $user = $request->user();
+        $profile = $user->isAlumni() ? $user->profile : null;
+
         return Inertia::render('Profile/Edit', [
-            'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
+            'mustVerifyEmail' => $user instanceof MustVerifyEmail,
             'status' => session('status'),
+            'alumni' => $profile === null ? null : [
+                'nisn' => $user->nisn,
+                'name' => $user->name,
+                'email' => $user->email,
+                'email_verified' => $user->email_verified_at !== null,
+                'gender' => $profile->gender,
+                'entry_year' => $profile->entry_year,
+                'graduation_year' => $profile->graduation_year,
+                'major' => $profile->major,
+                'pesantren_program' => $profile->pesantren_program,
+                'phone_number' => $profile->phone_number,
+                'city' => $profile->city,
+                'province' => $profile->province,
+                'address' => $profile->address,
+                'current_status' => $profile->current_status,
+                'avatar_url' => $profile->avatar_src,
+            ],
         ]);
     }
 
@@ -29,13 +53,21 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $this->profilService->update($request->user(), $request->validated());
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
-        }
+        return Redirect::route('profile.edit');
+    }
 
-        $request->user()->save();
+    public function updateAvatar(AvatarUpdateRequest $request): RedirectResponse
+    {
+        $this->profilService->storeAvatar($request->user(), $request->file('avatar'));
+
+        return Redirect::route('profile.edit');
+    }
+
+    public function destroyAvatar(AvatarUpdateRequest $request): RedirectResponse
+    {
+        $this->profilService->deleteAvatar($request->user());
 
         return Redirect::route('profile.edit');
     }

@@ -1,4 +1,4 @@
-import { Link, router } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
 import {
     ChartColumn,
     ClipboardList,
@@ -42,7 +42,7 @@ const adminNavigationGroups = [
         label: 'Data Alumni',
         items: [
             { label: 'Alumni', icon: Users, routeName: 'admin.alumni.index', activePattern: 'admin.alumni.*' },
-            { label: 'Verifikasi', icon: UserCheck, routeName: 'admin.verifikasi.index', activePattern: 'admin.verifikasi.*' },
+            { label: 'Verifikasi', icon: UserCheck, routeName: 'admin.verifikasi.index', activePattern: 'admin.verifikasi.*', badgeKey: 'verifikasi' },
         ],
     },
     {
@@ -101,6 +101,12 @@ function SidebarNavItem({ item }) {
         >
             <Icon aria-hidden="true" />
             <span className="flex-1 truncate">{item.label}</span>
+            {item.badge > 0 && (
+                <span className="min-w-6 rounded-full bg-warning-soft px-2 py-0.5 text-center text-xs font-semibold tabular-nums text-warning">
+                    {item.badge.toLocaleString('id-ID')}
+                    <span className="sr-only"> menunggu</span>
+                </span>
+            )}
         </Link>
     );
 }
@@ -126,9 +132,14 @@ export default function AdminLayout({ title, header, children }) {
     const pageTitle = title ?? (typeof header === 'string' ? header : undefined);
     const headerNode = typeof header === 'string' ? null : header;
 
+    const adminBadges = usePage().props.adminBadges ?? {};
+
     const navigationGroups = adminNavigationGroups.map((group) => ({
         ...group,
-        items: group.items.map(resolveNavItem),
+        items: group.items.map((item) => ({
+            ...resolveNavItem(item),
+            badge: item.badgeKey ? adminBadges[item.badgeKey] : undefined,
+        })),
     }));
 
     useEffect(() => router.on('navigate', () => setIsNavigationOpen(false)), []);
