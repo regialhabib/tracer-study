@@ -23,7 +23,7 @@ class BerandaService
     /**
      * Menyusun data Beranda alumni: kuesioner yang berlaku, status pengisian, dan kabar terbaru.
      *
-     * @return array{activeKuesioner: ?Kuesioner, hasFilled: bool, kuesionerList: list<array<string, mixed>>, beritaList: Collection<int, Berita>}
+     * @return array{activeKuesioner: ?Kuesioner, hasFilled: bool, kuesionerList: list<array<string, mixed>>, beritaList: Collection<int, Berita>, agendaTerdekat: ?Berita}
      */
     public function getBerandaData(User $user): array
     {
@@ -33,7 +33,8 @@ class BerandaService
             'activeKuesioner' => $activeKuesioner,
             'hasFilled' => (bool) $activeKuesioner?->respon->first()?->isSubmitted(),
             'kuesionerList' => $this->pengisianService->listForAlumni($user),
-            'beritaList' => Berita::published()->latest()->take(self::BERITA_LIMIT)->get(),
+            'beritaList' => Berita::published()->latest('published_at')->take(self::BERITA_LIMIT)->get()->each->makeHidden('content'),
+            'agendaTerdekat' => Berita::upcomingAgenda()->first()?->makeHidden('content'),
         ];
     }
 }

@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Button, DropdownMenuItem, DropdownMenuSeparator, Sheet, SheetBody, SheetHeader, SheetTitle } from '@/Components/ui';
+import NotificationBell from '@/Components/notifikasi/NotificationBell';
 import { cn } from '@/lib/utils';
 import AppShell from './Partials/AppShell';
 import BrandLogo from './Partials/BrandLogo';
@@ -189,6 +190,8 @@ export default function AdminLayout({ title, header, children }) {
                                     </p>
                                 )}
                             </div>
+
+                            <NotificationBell />
 
                             <UserMenu>
                                 <DropdownMenuItem href="/" icon={ExternalLink}>

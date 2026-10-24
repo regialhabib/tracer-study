@@ -19,11 +19,12 @@ class AkunDiverifikasiNotification extends Notification
     /**
      * Isi notifikasi yang disimpan di tabel `notifications`.
      *
-     * @return array{title: string, message: string, url: string}
+     * @return array{kind: string, title: string, message: string, url: string}
      */
     public function toArray(object $notifiable): array
     {
         return [
+            'kind' => 'akun_diverifikasi',
             'title' => 'Akun Anda telah diverifikasi',
             'message' => 'Admin madrasah telah menyetujui pendaftaran Anda. Silakan lengkapi data dan isi kuesioner.',
             'url' => route('dashboard'),

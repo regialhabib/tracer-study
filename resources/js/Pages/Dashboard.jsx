@@ -1,10 +1,10 @@
 import AlumniLayout from '@/Layouts/AlumniLayout';
 import { Head, Link, usePage } from '@inertiajs/react';
-import { ArrowRight, CalendarClock, CheckCircle2, CircleAlert, ClipboardCheck, Clock, ListChecks, Newspaper, PencilLine } from 'lucide-react';
+import { ArrowRight, CalendarClock, CheckCircle2, CircleAlert, ClipboardCheck, Clock, ListChecks, MapPin, Newspaper, PencilLine } from 'lucide-react';
 import { Badge, Button, Card, CardContent, CardDescription, CardFooter, CardHeader, EmptyState, PageHeader } from '@/Components/ui';
 import BeritaCover from '@/Components/berita/BeritaCover';
 import BeritaTypeBadge from '@/Components/berita/BeritaTypeBadge';
-import { formatShortDate } from '@/Components/berita/beritaMeta';
+import { formatLongDate, formatShortDate, formatTime } from '@/Components/berita/beritaMeta';
 
 /** Label status kegiatan alumni (`alumni_profiles.current_status`), urutan mengikuti DESIGN.md §2.3. */
 const CURRENT_STATUS_LABELS = {
@@ -137,7 +137,7 @@ function BeritaListItem({ berita }) {
     return (
         <li className="group relative flex gap-3 py-4 first:pt-0 last:pb-0 sm:gap-4">
             <BeritaCover
-                src={berita.thumbnail}
+                src={berita.thumbnail_src}
                 alt=""
                 type={berita.type}
                 className="w-28 shrink-0 rounded-md sm:w-36"
@@ -199,7 +199,48 @@ function BeritaTerbaruCard({ beritaList }) {
     );
 }
 
-export default function Dashboard({ kuesionerList = [], beritaList = [] }) {
+function AgendaTerdekatCard({ agenda }) {
+    const eventDate = formatLongDate(agenda.event_date);
+    const eventTime = formatTime(agenda.event_date);
+
+    return (
+        <Card>
+            <CardHeader>
+                <h2 className={sectionTitleClasses}>Agenda Terdekat</h2>
+            </CardHeader>
+
+            <CardContent className="space-y-3">
+                <h3 className="text-base font-semibold leading-snug text-foreground">{agenda.title}</h3>
+
+                <dl className="space-y-2 text-sm">
+                    <div className="flex items-start gap-2">
+                        <dt className="sr-only">Waktu</dt>
+                        <CalendarClock aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-info" />
+                        <dd className="text-foreground">
+                            {eventDate}
+                            {eventTime && <span className="text-muted-foreground"> · pukul {eventTime} WIB</span>}
+                        </dd>
+                    </div>
+                    {agenda.location && (
+                        <div className="flex items-start gap-2">
+                            <dt className="sr-only">Lokasi</dt>
+                            <MapPin aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-info" />
+                            <dd className="text-foreground">{agenda.location}</dd>
+                        </div>
+                    )}
+                </dl>
+            </CardContent>
+
+            <CardFooter>
+                <Button asChild variant="outline" className="w-full">
+                    <Link href={route('berita.show', agenda.slug)}>Lihat Detail Agenda</Link>
+                </Button>
+            </CardFooter>
+        </Card>
+    );
+}
+
+export default function Dashboard({ kuesionerList = [], beritaList = [], agendaTerdekat = null }) {
     const user = usePage().props.auth?.user;
 
     return (
@@ -232,7 +273,10 @@ export default function Dashboard({ kuesionerList = [], beritaList = [] }) {
                     </section>
 
                     <aside aria-label="Ringkasan profil" className="lg:col-start-3 lg:row-span-2 lg:row-start-1 lg:self-start">
-                        <ProfileSummaryCard user={user} />
+                        <div className="space-y-4 md:space-y-6">
+                            {agendaTerdekat && <AgendaTerdekatCard agenda={agendaTerdekat} />}
+                            <ProfileSummaryCard user={user} />
+                        </div>
                     </aside>
 
                     <section aria-label="Kabar terbaru" className="lg:col-span-2">

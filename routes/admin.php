@@ -26,3 +26,4 @@ require __DIR__.'/admin/alumni.php';
 require __DIR__.'/admin/kuesioner.php';
 require __DIR__.'/admin/analitik-ekspor.php';
 require __DIR__.'/admin/analitik.php';
+require __DIR__.'/admin/berita.php';

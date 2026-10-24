@@ -6,6 +6,7 @@ use App\Enums\KuesionerStatus;
 use App\Enums\MetricKey;
 use App\Enums\QuestionType;
 use App\Enums\ResponStatus;
+use App\Jobs\KirimNotifikasiKuesionerDibuka;
 use App\Models\Kuesioner;
 use App\Models\Pertanyaan;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -134,6 +135,10 @@ class KuesionerBuilderService
         }
 
         $kuesioner->update(['status' => $target]);
+
+        if ($target === KuesionerStatus::Active) {
+            KirimNotifikasiKuesionerDibuka::dispatch($kuesioner);
+        }
 
         return $kuesioner;
     }

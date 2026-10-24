@@ -27,7 +27,7 @@ class BeritaFactory extends Factory
             'title' => $title,
             'slug' => Str::slug($title).'-'.fake()->unique()->numberBetween(100, 9999),
             'thumbnail' => null,
-            'content' => fake()->paragraphs(3, true),
+            'content' => collect(fake()->paragraphs(3))->map(fn (string $paragraph) => '<p>'.$paragraph.'</p>')->implode(''),
             'event_date' => null,
             'location' => null,
             'registration_link' => null,
@@ -57,6 +57,17 @@ class BeritaFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'status' => 'draft',
             'published_at' => null,
+        ]);
+    }
+
+    /**
+     * State untuk konten terbit yang dijadwalkan di masa depan.
+     */
+    public function scheduled(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'status' => 'published',
+            'published_at' => now()->addDays(3),
         ]);
     }
 }

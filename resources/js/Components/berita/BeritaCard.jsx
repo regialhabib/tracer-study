@@ -10,15 +10,15 @@ import { formatShortDate } from './beritaMeta';
  * Seluruh kartu dapat diketuk lewat tautan judul yang direntangkan.
  *
  * Props:
- * - `berita` `{ slug, title, type, thumbnail, published_at, content? }`.
- *            Cuplikan hanya tampil bila `content` tersedia.
+ * - `berita` `{ slug, title, type, thumbnail_src, published_at, excerpt? }`.
+ *            Cuplikan hanya tampil bila `excerpt` tersedia.
  */
 export default function BeritaCard({ berita }) {
     const publishedDate = formatShortDate(berita.published_at);
 
     return (
         <Card className="group relative flex flex-col overflow-hidden transition-colors duration-150 ease-out focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 hover:border-primary/30">
-            <BeritaCover src={berita.thumbnail} alt="" type={berita.type} />
+            <BeritaCover src={berita.thumbnail_src} alt="" type={berita.type} />
 
             <div className="flex flex-1 flex-col gap-2 p-4 md:p-5">
                 <div className="flex flex-wrap items-center justify-between gap-2">
@@ -40,7 +40,7 @@ export default function BeritaCard({ berita }) {
                     </Link>
                 </h3>
 
-                {berita.content && <p className="line-clamp-3 text-sm text-muted-foreground">{berita.content}</p>}
+                {berita.excerpt && <p className="line-clamp-3 text-sm text-muted-foreground">{berita.excerpt}</p>}
             </div>
         </Card>
     );

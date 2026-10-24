@@ -62,4 +62,71 @@ class BeritaTest extends TestCase
             ->where('berita.location', 'Aula Utama Pesantren')
         );
     }
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Halaman Berita/Index baru masuk manifest Vite setelah `npm run build`.
+        $this->withoutVite();
+    }
+
+    public function test_scheduled_news_is_hidden_from_index_and_detail_is_not_found(): void
+    {
+        $terjadwal = Berita::factory()->scheduled()->create();
+        $terbit = Berita::factory()->create();
+
+        $this->get(route('berita.index'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Berita/Index')
+                ->has('beritaList.data', 1)
+                ->where('beritaList.data.0.id', $terbit->id)
+            );
+
+        $this->get(route('berita.show', $terjadwal->slug))->assertNotFound();
+    }
+
+    public function test_index_excludes_drafts_and_does_not_send_full_content(): void
+    {
+        Berita::factory()->draft()->create();
+        Berita::factory()->create();
+
+        $this->get(route('berita.index'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('beritaList.data', 1)
+                ->missing('beritaList.data.0.content')
+                ->has('beritaList.data.0.excerpt')
+            );
+    }
+
+    public function test_index_filters_by_type_and_paginates_nine_per_page(): void
+    {
+        Berita::factory()->count(10)->create(['type' => 'berita']);
+        Berita::factory()->agenda()->create();
+
+        $this->get(route('berita.index'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('beritaList.data', 9)
+                ->where('beritaList.total', 11)
+            );
+
+        $this->get(route('berita.index', ['tipe' => 'agenda']))
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('beritaList.data', 1)
+                ->where('beritaList.data.0.type', 'agenda')
+                ->where('tipe', 'agenda')
+            );
+    }
+
+    public function test_index_ignores_unknown_type_filter(): void
+    {
+        Berita::factory()->count(2)->create();
+
+        $this->get(route('berita.index', ['tipe' => 'tidak-ada']))
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('beritaList.data', 2)
+                ->where('tipe', null)
+            );
+    }
 }

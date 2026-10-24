@@ -45,6 +45,30 @@ class BerandaControllerTest extends TestCase
         );
     }
 
+    public function test_beranda_includes_nearest_upcoming_agenda(): void
+    {
+        $user = $this->alumniLulusan();
+        Berita::factory()->agenda()->create(['event_date' => now()->addDays(30)]);
+        $terdekat = Berita::factory()->agenda()->create(['event_date' => now()->addDays(5)]);
+        Berita::factory()->agenda()->create(['event_date' => now()->subDays(2)]);
+        Berita::factory()->agenda()->draft()->create(['event_date' => now()->addDay()]);
+
+        $response = $this->actingAs($user)->get(route('dashboard'));
+
+        $response->assertInertia(fn (Assert $page) => $page
+            ->where('agendaTerdekat.id', $terdekat->id)
+            ->missing('agendaTerdekat.content')
+        );
+    }
+
+    public function test_beranda_has_no_agenda_when_none_upcoming(): void
+    {
+        $user = $this->alumniLulusan();
+
+        $this->actingAs($user)->get(route('dashboard'))
+            ->assertInertia(fn (Assert $page) => $page->where('agendaTerdekat', null));
+    }
+
     public function test_beranda_marks_kuesioner_filled_when_response_submitted(): void
     {
         $user = $this->alumniLulusan();

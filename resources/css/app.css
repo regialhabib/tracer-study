@@ -124,3 +124,64 @@
     }
   }
 }
+
+@layer components {
+  /* Isi berita (HTML tersanitasi) dan area ketik editor. */
+  .rich-content {
+    @apply max-w-prose text-base leading-7 text-foreground;
+    overflow-wrap: anywhere;
+  }
+
+  .rich-content > * + * {
+    @apply mt-4;
+  }
+
+  .rich-content h2 {
+    @apply mt-8 text-xl font-semibold leading-snug tracking-tight text-foreground;
+  }
+
+  .rich-content h3 {
+    @apply mt-6 text-lg font-semibold leading-snug text-foreground;
+  }
+
+  .rich-content strong {
+    @apply font-semibold;
+  }
+
+  .rich-content a {
+    @apply font-medium text-primary underline underline-offset-2 hover:text-primary-hover;
+  }
+
+  .rich-content ul {
+    @apply list-disc pl-6;
+  }
+
+  .rich-content ol {
+    @apply list-decimal pl-6;
+  }
+
+  .rich-content li + li {
+    @apply mt-1.5;
+  }
+
+  .rich-content li > p {
+    @apply m-0;
+  }
+
+  .rich-content blockquote {
+    @apply border-l-4 border-primary/40 pl-4 italic text-muted-foreground;
+  }
+
+  .rich-content hr {
+    @apply my-6 border-border;
+  }
+
+  .rich-editor-content {
+    @apply min-h-[16rem] max-w-none px-3 py-3 text-base focus:outline-none;
+  }
+
+  .rich-editor-content p.is-editor-empty:first-child::before {
+    @apply pointer-events-none float-left h-0 text-muted-foreground;
+    content: attr(data-placeholder);
+  }
+}

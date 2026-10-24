@@ -1,6 +1,7 @@
 import { Link, usePage } from '@inertiajs/react';
-import { Bell, ClipboardList, House, LogOut, MessageCircle, Newspaper, Shield, UserRound } from 'lucide-react';
-import { Button, DropdownMenuItem, DropdownMenuSeparator } from '@/Components/ui';
+import { ClipboardList, House, LogOut, MessageCircle, Newspaper, Shield, UserRound } from 'lucide-react';
+import { DropdownMenuItem, DropdownMenuSeparator } from '@/Components/ui';
+import NotificationBell from '@/Components/notifikasi/NotificationBell';
 import { cn } from '@/lib/utils';
 import AppShell from './Partials/AppShell';
 import BrandLogo from './Partials/BrandLogo';
@@ -10,7 +11,7 @@ import { COMING_SOON_LABEL, resolveNavItem } from './Partials/navigation';
 /**
  * AlumniLayout — kerangka area alumni (mobile-first, DESIGN.md §4.1).
  *
- * - Top bar putih 56px: logo, navigasi (≥ md), lonceng notifikasi (placeholder), menu akun.
+ * - Top bar putih 56px: logo, navigasi (≥ md), lonceng notifikasi, menu akun.
  * - Bottom navigation 64px di < md dengan 5 item; item yang route-nya belum ada tampil nonaktif.
  *
  * Props:
@@ -120,16 +121,7 @@ export default function AlumniLayout({ header, children }) {
                         </nav>
 
                         <div className="flex shrink-0 items-center gap-1">
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                disabled
-                                aria-label="Notifikasi (segera hadir)"
-                                title="Notifikasi (segera hadir)"
-                                className="text-muted-foreground [&_svg]:size-5"
-                            >
-                                <Bell aria-hidden="true" />
-                            </Button>
+                            <NotificationBell />
 
                             <UserMenu>
                                 <DropdownMenuItem href={route('profile.edit')} icon={UserRound}>

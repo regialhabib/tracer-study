@@ -6,9 +6,10 @@ import BeritaCard from '@/Components/berita/BeritaCard';
 import BeritaCover from '@/Components/berita/BeritaCover';
 import BeritaTypeBadge from '@/Components/berita/BeritaTypeBadge';
 import { formatLongDate, formatShortDate, formatTime } from '@/Components/berita/beritaMeta';
-import PublicLayout from '@/Layouts/PublicLayout';
+import BeritaLayout from '@/Components/berita/BeritaLayout';
+import RichContent from '@/Components/berita/RichContent';
 
-export default function Show({ auth, berita, beritaTerkait = [] }) {
+export default function Show({ berita, beritaTerkait = [] }) {
     const [copied, setCopied] = useState(false);
 
     const handleCopyLink = () => {
@@ -29,7 +30,7 @@ export default function Show({ auth, berita, beritaTerkait = [] }) {
     const hasAgendaDetails = berita.type === 'agenda' || berita.event_date || berita.location;
 
     return (
-        <PublicLayout>
+        <BeritaLayout>
             <Head title={`${berita.title} - Pondok Pesantren RIYADHUL AMIEN`} />
 
             <div className="py-6 md:py-12">
@@ -64,7 +65,7 @@ export default function Show({ auth, berita, beritaTerkait = [] }) {
                     </header>
 
                     <BeritaCover
-                        src={berita.thumbnail}
+                        src={berita.thumbnail_src}
                         alt={berita.title}
                         type={berita.type}
                         loading="eager"
@@ -122,9 +123,7 @@ export default function Show({ auth, berita, beritaTerkait = [] }) {
                         </section>
                     )}
 
-                    <div className="max-w-prose whitespace-pre-line text-base leading-7 text-foreground">
-                        {berita.content}
-                    </div>
+                    <RichContent html={berita.content} />
 
                     <div className="flex flex-col gap-4 border-t border-border pt-6 sm:flex-row sm:items-center sm:justify-between">
                         <Button variant="outline" onClick={handleCopyLink} className="w-full sm:w-auto">
@@ -137,7 +136,7 @@ export default function Show({ auth, berita, beritaTerkait = [] }) {
                         </Button>
 
                         <Button asChild variant="link" className="self-center sm:self-auto">
-                            <Link href="/">Lihat kabar lainnya di Beranda</Link>
+                            <Link href={route('berita.index')}>Lihat semua kabar</Link>
                         </Button>
                     </div>
                 </article>
@@ -158,6 +157,6 @@ export default function Show({ auth, berita, beritaTerkait = [] }) {
                     </section>
                 )}
             </div>
-        </PublicLayout>
+        </BeritaLayout>
     );
 }

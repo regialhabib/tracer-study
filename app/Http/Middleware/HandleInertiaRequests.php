@@ -40,6 +40,9 @@ class HandleInertiaRequests extends Middleware
                 'error' => session('error'),
             ],
             'adminBadges' => fn (): ?array => $this->adminBadges($request),
+            'notifikasi' => fn (): ?array => $request->user()
+                ? ['unread' => $request->user()->unreadNotifications()->count()]
+                : null,
         ];
     }
 

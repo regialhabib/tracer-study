@@ -11,7 +11,7 @@ use Inertia\Inertia;
 
 Route::get('/', function () {
     $beritaTerbaru = Schema::hasTable('berita')
-        ? Berita::published()->latest()->get()
+        ? Berita::published()->latest()->take(6)->get()
         : collect();
 
     return Inertia::render('Welcome', [
@@ -23,7 +23,8 @@ Route::get('/', function () {
     ]);
 });
 
-// Detail Berita & Agenda Publik
+// Berita & Agenda Publik
+Route::get('/berita', [BeritaController::class, 'index'])->name('berita.index');
 Route::get('/berita/{berita:slug}', [BeritaController::class, 'show'])->name('berita.show');
 
 // Area alumni (dan profil pengguna) — hanya akun aktif yang sudah menyelesaikan onboarding
@@ -36,6 +37,12 @@ Route::middleware(['auth', 'active', 'not_first_login'])->group(function () {
     Route::post('/profile/avatar', [ProfileController::class, 'updateAvatar'])->name('profile.avatar.update');
     Route::delete('/profile/avatar', [ProfileController::class, 'destroyAvatar'])->name('profile.avatar.destroy');
 });
+
+// Notifikasi dalam aplikasi — admin & alumni
+Route::middleware(['auth', 'active', 'not_first_login'])
+    ->prefix('notifikasi')
+    ->name('notifikasi.')
+    ->group(base_path('routes/notifikasi.php'));
 
 // Pengisian kuesioner — khusus alumni
 Route::middleware(['auth', 'active', 'not_first_login', 'role:alumni'])
