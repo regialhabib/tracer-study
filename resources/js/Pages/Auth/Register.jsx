@@ -1,11 +1,15 @@
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/Components/ui/card';
-import { Button } from '@/Components/ui/button';
-import { Input } from '@/Components/ui/input';
-import { Label } from '@/Components/ui/label';
-import { Badge } from '@/Components/ui/badge';
+import { Button, FieldError, FieldHint, Input, Label, Select } from '@/Components/ui';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { UserPlus, Sparkles } from 'lucide-react';
+
+/**
+ * Bangun nilai `aria-describedby` dari id teks bantuan dan id pesan error (bila ada).
+ */
+function describedBy(hintId, errorId, error) {
+    const ids = [hintId, error ? errorId : null].filter(Boolean);
+
+    return ids.length > 0 ? ids.join(' ') : undefined;
+}
 
 export default function Register() {
     const currentYear = new Date().getFullYear();
@@ -32,208 +36,216 @@ export default function Register() {
 
     return (
         <GuestLayout>
-            <Head title="Pendaftaran Mandiri Santri Alumni" />
+            <Head title="Daftar Akun Alumni" />
 
-            <Card className="shadow-lg border-slate-200/80 dark:border-slate-800">
-                <CardHeader className="space-y-1 text-center pb-4">
-                    <div className="flex justify-center mb-1">
-                        <Badge variant="emerald" className="gap-1 px-3 py-1 text-xs">
-                            <Sparkles className="h-3 w-3" /> Registrasi Mandiri Alumni
-                        </Badge>
-                    </div>
-                    <CardTitle className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
-                        Buat Akun Santri
-                    </CardTitle>
-                    <CardDescription className="text-xs text-slate-500">
-                        Daftarkan data kelulusan Anda untuk mengakses kuesioner tracer study
-                    </CardDescription>
-                </CardHeader>
-
-                <CardContent className="space-y-4">
-                    <form onSubmit={submit} className="space-y-4">
-                        <div className="space-y-1.5">
-                            <Label htmlFor="name">Nama Lengkap Santri</Label>
-                            <Input
-                                id="name"
-                                name="name"
-                                value={data.name}
-                                autoComplete="name"
-                                placeholder="Nama sesuai ijazah MA"
-                                autoFocus
-                                onChange={(e) => setData('name', e.target.value)}
-                                required
-                            />
-                            {errors.name && (
-                                <p className="text-xs text-red-600 font-medium">{errors.name}</p>
-                            )}
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-3">
-                            <div className="space-y-1.5">
-                                <Label htmlFor="nisn">NISN (10 Digit)</Label>
-                                <Input
-                                    id="nisn"
-                                    name="nisn"
-                                    value={data.nisn}
-                                    placeholder="005XXXXXXX"
-                                    maxLength="20"
-                                    onChange={(e) => setData('nisn', e.target.value)}
-                                    required
-                                />
-                                {errors.nisn && (
-                                    <p className="text-xs text-red-600 font-medium">{errors.nisn}</p>
-                                )}
-                            </div>
-
-                            <div className="space-y-1.5">
-                                <Label htmlFor="gender">Jenis Kelamin</Label>
-                                <select
-                                    id="gender"
-                                    name="gender"
-                                    value={data.gender}
-                                    className="flex h-10 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-50"
-                                    onChange={(e) => setData('gender', e.target.value)}
-                                    required
-                                >
-                                    <option value="L">Laki-laki (Banin)</option>
-                                    <option value="P">Perempuan (Banat)</option>
-                                </select>
-                                {errors.gender && (
-                                    <p className="text-xs text-red-600 font-medium">{errors.gender}</p>
-                                )}
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-3">
-                            <div className="space-y-1.5">
-                                <Label htmlFor="major">Peminatan / Jurusan</Label>
-                                <select
-                                    id="major"
-                                    name="major"
-                                    value={data.major}
-                                    className="flex h-10 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-50"
-                                    onChange={(e) => setData('major', e.target.value)}
-                                    required
-                                >
-                                    <option value="Keagamaan (PK)">Keagamaan (PK)</option>
-                                    <option value="MIPA">MIPA</option>
-                                    <option value="IPS">IPS</option>
-                                    <option value="Bahasa">Bahasa</option>
-                                </select>
-                                {errors.major && (
-                                    <p className="text-xs text-red-600 font-medium">{errors.major}</p>
-                                )}
-                            </div>
-
-                            <div className="space-y-1.5">
-                                <Label htmlFor="graduation_year">Tahun Kelulusan</Label>
-                                <Input
-                                    id="graduation_year"
-                                    type="number"
-                                    name="graduation_year"
-                                    value={data.graduation_year}
-                                    min="2010"
-                                    max={currentYear + 1}
-                                    onChange={(e) => setData('graduation_year', e.target.value)}
-                                    required
-                                />
-                                {errors.graduation_year && (
-                                    <p className="text-xs text-red-600 font-medium">{errors.graduation_year}</p>
-                                )}
-                            </div>
-                        </div>
-
-                        <div className="space-y-1.5">
-                            <Label htmlFor="email">Alamat Email Aktif</Label>
-                            <Input
-                                id="email"
-                                type="email"
-                                name="email"
-                                value={data.email}
-                                autoComplete="email"
-                                placeholder="alumni@contoh.com"
-                                onChange={(e) => setData('email', e.target.value)}
-                                required
-                            />
-                            {errors.email && (
-                                <p className="text-xs text-red-600 font-medium">{errors.email}</p>
-                            )}
-                        </div>
-
-                        <div className="space-y-1.5">
-                            <Label htmlFor="phone_number">Nomor WhatsApp</Label>
-                            <Input
-                                id="phone_number"
-                                type="tel"
-                                name="phone_number"
-                                value={data.phone_number}
-                                placeholder="Contoh: 081234567890"
-                                onChange={(e) => setData('phone_number', e.target.value)}
-                            />
-                            {errors.phone_number && (
-                                <p className="text-xs text-red-600 font-medium">{errors.phone_number}</p>
-                            )}
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-3">
-                            <div className="space-y-1.5">
-                                <Label htmlFor="password">Password</Label>
-                                <Input
-                                    id="password"
-                                    type="password"
-                                    name="password"
-                                    value={data.password}
-                                    autoComplete="new-password"
-                                    placeholder="Min 8 karakter"
-                                    onChange={(e) => setData('password', e.target.value)}
-                                    required
-                                />
-                                {errors.password && (
-                                    <p className="text-xs text-red-600 font-medium">{errors.password}</p>
-                                )}
-                            </div>
-
-                            <div className="space-y-1.5">
-                                <Label htmlFor="password_confirmation">Ulangi Password</Label>
-                                <Input
-                                    id="password_confirmation"
-                                    type="password"
-                                    name="password_confirmation"
-                                    value={data.password_confirmation}
-                                    autoComplete="new-password"
-                                    placeholder="Ulangi"
-                                    onChange={(e) => setData('password_confirmation', e.target.value)}
-                                    required
-                                />
-                                {errors.password_confirmation && (
-                                    <p className="text-xs text-red-600 font-medium">{errors.password_confirmation}</p>
-                                )}
-                            </div>
-                        </div>
-
-                        <Button
-                            type="submit"
-                            disabled={processing}
-                            className="w-full gap-2 bg-emerald-700 hover:bg-emerald-800 text-white font-medium shadow-md shadow-emerald-700/20"
-                        >
-                            <UserPlus className="h-4 w-4" />
-                            {processing ? 'Mendaftarkan Data...' : 'Daftar Akun Santri'}
-                        </Button>
-                    </form>
-                </CardContent>
-
-                <CardFooter className="flex flex-col space-y-2 border-t border-slate-100 dark:border-slate-800/80 pt-4 text-center">
-                    <p className="text-xs text-slate-500">
-                        Sudah memiliki akun santri?{' '}
-                        <Link
-                            href={route('login')}
-                            className="font-semibold text-emerald-700 hover:text-emerald-800 hover:underline dark:text-emerald-400"
-                        >
-                            Masuk Disini
-                        </Link>
+            <div className="flex flex-col gap-6">
+                <header className="flex flex-col gap-1 text-center">
+                    <h1 className="text-[22px] font-bold tracking-tight text-foreground md:text-2xl">
+                        Daftar Akun Alumni
+                    </h1>
+                    <p className="text-sm text-muted-foreground">
+                        Isi data kelulusan Anda agar dapat mengakses kuesioner tracer study.
                     </p>
-                </CardFooter>
-            </Card>
+                </header>
+
+                <form onSubmit={submit} className="flex flex-col gap-4">
+                    <div className="flex flex-col gap-1.5">
+                        <Label htmlFor="name" required>
+                            Nama Lengkap
+                        </Label>
+                        <Input
+                            id="name"
+                            name="name"
+                            value={data.name}
+                            autoComplete="name"
+                            placeholder="Sesuai ijazah MA"
+                            autoFocus
+                            invalid={Boolean(errors.name)}
+                            aria-describedby={describedBy(null, 'name-error', errors.name)}
+                            onChange={(e) => setData('name', e.target.value)}
+                            required
+                        />
+                        <FieldError id="name-error" message={errors.name} />
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-3">
+                        <div className="flex flex-col gap-1.5">
+                            <Label htmlFor="nisn" required>
+                                NISN
+                            </Label>
+                            <FieldHint id="nisn-hint">10 digit angka.</FieldHint>
+                            <Input
+                                id="nisn"
+                                name="nisn"
+                                value={data.nisn}
+                                inputMode="numeric"
+                                placeholder="005XXXXXXX"
+                                maxLength="20"
+                                className="font-mono"
+                                invalid={Boolean(errors.nisn)}
+                                aria-describedby={describedBy('nisn-hint', 'nisn-error', errors.nisn)}
+                                onChange={(e) => setData('nisn', e.target.value)}
+                                required
+                            />
+                            <FieldError id="nisn-error" message={errors.nisn} />
+                        </div>
+
+                        <div className="flex flex-col gap-1.5">
+                            <Label htmlFor="gender" required>
+                                Jenis Kelamin
+                            </Label>
+                            <Select
+                                id="gender"
+                                name="gender"
+                                value={data.gender}
+                                invalid={Boolean(errors.gender)}
+                                aria-describedby={describedBy(null, 'gender-error', errors.gender)}
+                                onChange={(e) => setData('gender', e.target.value)}
+                                required
+                            >
+                                <option value="L">Laki-laki (Banin)</option>
+                                <option value="P">Perempuan (Banat)</option>
+                            </Select>
+                            <FieldError id="gender-error" message={errors.gender} />
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-3">
+                        <div className="flex flex-col gap-1.5">
+                            <Label htmlFor="major" required>
+                                Peminatan / Jurusan
+                            </Label>
+                            <Select
+                                id="major"
+                                name="major"
+                                value={data.major}
+                                invalid={Boolean(errors.major)}
+                                aria-describedby={describedBy(null, 'major-error', errors.major)}
+                                onChange={(e) => setData('major', e.target.value)}
+                                required
+                            >
+                                <option value="Keagamaan (PK)">Keagamaan (PK)</option>
+                                <option value="MIPA">MIPA</option>
+                                <option value="IPS">IPS</option>
+                                <option value="Bahasa">Bahasa</option>
+                            </Select>
+                            <FieldError id="major-error" message={errors.major} />
+                        </div>
+
+                        <div className="flex flex-col gap-1.5">
+                            <Label htmlFor="graduation_year" required>
+                                Tahun Kelulusan
+                            </Label>
+                            <Input
+                                id="graduation_year"
+                                type="number"
+                                name="graduation_year"
+                                value={data.graduation_year}
+                                min="2010"
+                                max={currentYear + 1}
+                                className="tabular-nums"
+                                invalid={Boolean(errors.graduation_year)}
+                                aria-describedby={describedBy(null, 'graduation_year-error', errors.graduation_year)}
+                                onChange={(e) => setData('graduation_year', e.target.value)}
+                                required
+                            />
+                            <FieldError id="graduation_year-error" message={errors.graduation_year} />
+                        </div>
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                        <Label htmlFor="email" required>
+                            Email Aktif
+                        </Label>
+                        <Input
+                            id="email"
+                            type="email"
+                            name="email"
+                            value={data.email}
+                            autoComplete="email"
+                            placeholder="nama@email.com"
+                            invalid={Boolean(errors.email)}
+                            aria-describedby={describedBy(null, 'email-error', errors.email)}
+                            onChange={(e) => setData('email', e.target.value)}
+                            required
+                        />
+                        <FieldError id="email-error" message={errors.email} />
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                        <Label htmlFor="phone_number">Nomor WhatsApp</Label>
+                        <FieldHint id="phone_number-hint">Opsional, agar kami mudah menghubungi Anda.</FieldHint>
+                        <Input
+                            id="phone_number"
+                            type="tel"
+                            name="phone_number"
+                            value={data.phone_number}
+                            autoComplete="tel"
+                            inputMode="tel"
+                            placeholder="Contoh: 081234567890"
+                            invalid={Boolean(errors.phone_number)}
+                            aria-describedby={describedBy('phone_number-hint', 'phone_number-error', errors.phone_number)}
+                            onChange={(e) => setData('phone_number', e.target.value)}
+                        />
+                        <FieldError id="phone_number-error" message={errors.phone_number} />
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                        <Label htmlFor="password" required>
+                            Kata Sandi
+                        </Label>
+                        <FieldHint id="password-hint">Minimal 8 karakter.</FieldHint>
+                        <Input
+                            id="password"
+                            type="password"
+                            name="password"
+                            value={data.password}
+                            autoComplete="new-password"
+                            invalid={Boolean(errors.password)}
+                            aria-describedby={describedBy('password-hint', 'password-error', errors.password)}
+                            onChange={(e) => setData('password', e.target.value)}
+                            required
+                        />
+                        <FieldError id="password-error" message={errors.password} />
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                        <Label htmlFor="password_confirmation" required>
+                            Ulangi Kata Sandi
+                        </Label>
+                        <Input
+                            id="password_confirmation"
+                            type="password"
+                            name="password_confirmation"
+                            value={data.password_confirmation}
+                            autoComplete="new-password"
+                            invalid={Boolean(errors.password_confirmation)}
+                            aria-describedby={describedBy(
+                                null,
+                                'password_confirmation-error',
+                                errors.password_confirmation,
+                            )}
+                            onChange={(e) => setData('password_confirmation', e.target.value)}
+                            required
+                        />
+                        <FieldError id="password_confirmation-error" message={errors.password_confirmation} />
+                    </div>
+
+                    <Button type="submit" size="lg" className="mt-2 w-full" loading={processing} loadingText="Mendaftarkan…">
+                        Daftar Akun
+                    </Button>
+                </form>
+
+                <p className="border-t border-border pt-4 text-center text-sm text-muted-foreground">
+                    Sudah punya akun alumni?{' '}
+                    <Link
+                        href={route('login')}
+                        className="rounded-sm font-semibold text-brand-blue underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                        Masuk
+                    </Link>
+                </p>
+            </div>
         </GuestLayout>
     );
 }

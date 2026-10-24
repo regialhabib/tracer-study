@@ -1,62 +1,101 @@
-@import '@fontsource-variable/geist/index.css';
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * Design tokens — "Modern Bersih" (docs/DESIGN.md §2).
+ * Nilai berupa komponen HSL agar bisa dipakai dengan modifier opacity Tailwind,
+ * misalnya bg-primary/10.
+ */
 @layer base {
   :root {
-    --background: 210 20% 98%;
+    --background: 210 40% 98%;
     --foreground: 222 47% 11%;
     --card: 0 0% 100%;
     --card-foreground: 222 47% 11%;
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
-    --primary: 160 84% 39%;
+
+    --primary: 142 72% 29%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 210 40% 96.1%;
+    --primary-hover: 143 64% 24%;
+    --primary-soft: 138 76% 97%;
+
+    --brand-blue: 201 96% 32%;
+
+    --secondary: 210 40% 96%;
     --secondary-foreground: 222 47% 11%;
-    --muted: 210 40% 96.1%;
+    --muted: 210 40% 96%;
     --muted-foreground: 215 16% 47%;
-    --accent: 38 92% 50%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222 47% 11%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 142 72% 29%;
+    --success-soft: 138 76% 97%;
+    --warning: 26 90% 37%;
+    --warning-soft: 48 100% 96%;
+    --danger: 0 72% 51%;
+    --danger-soft: 0 86% 97%;
+    --info: 201 96% 32%;
+    --info-soft: 204 100% 97%;
+
     --border: 214 32% 91%;
     --input: 214 32% 91%;
-    --ring: 160 84% 39%;
-    --chart-1: 160 84% 39%;
-    --chart-2: 38 92% 50%;
-    --chart-3: 199 89% 48%;
-    --chart-4: 262 83% 58%;
-    --chart-5: 346 87% 57%;
-    --radius: 0.875rem;
+    --ring: 142 76% 36%;
+
+    /* Palet kategorikal grafik, urutan tetap per status kegiatan alumni (DESIGN.md §2.3). */
+    --chart-1: 142 72% 29%;
+    --chart-2: 213 68% 50%;
+    --chart-3: 17 82% 56%;
+    --chart-4: 248 62% 58%;
+    --chart-5: 41 100% 46%;
+    --chart-6: 337 70% 70%;
+    --chart-7: 215 20% 65%;
+
+    --radius: 0.75rem;
   }
+
+  /* Dark mode dipelihara untuk fase lanjutan; bukan syarat rilis MVP. */
   .dark {
-    --background: 222 47% 11%;
+    --background: 220 49% 8%;
     --foreground: 210 40% 98%;
-    --card: 222 47% 14%;
+    --card: 221 46% 12%;
     --card-foreground: 210 40% 98%;
-    --popover: 222 47% 14%;
+    --popover: 221 46% 12%;
     --popover-foreground: 210 40% 98%;
-    --primary: 160 84% 45%;
-    --primary-foreground: 222 47% 11%;
-    --secondary: 217 33% 18%;
+
+    --primary: 142 71% 45%;
+    --primary-foreground: 220 49% 8%;
+    --primary-hover: 142 76% 36%;
+    --primary-soft: 143 64% 14%;
+
+    --brand-blue: 198 93% 60%;
+
+    --secondary: 217 33% 17%;
     --secondary-foreground: 210 40% 98%;
-    --muted: 217 33% 18%;
+    --muted: 217 33% 17%;
     --muted-foreground: 215 20% 65%;
-    --accent: 38 92% 55%;
-    --accent-foreground: 222 47% 11%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --accent: 217 33% 17%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 142 71% 45%;
+    --success-soft: 143 64% 14%;
+    --warning: 38 92% 50%;
+    --warning-soft: 32 81% 14%;
+    --danger: 0 84% 60%;
+    --danger-soft: 0 63% 16%;
+    --info: 198 93% 60%;
+    --info-soft: 201 80% 14%;
+
     --border: 217 33% 22%;
     --input: 217 33% 22%;
-    --ring: 160 84% 45%;
-    --chart-1: 160 84% 45%;
-    --chart-2: 38 92% 55%;
-    --chart-3: 199 89% 58%;
-    --chart-4: 262 83% 68%;
-    --chart-5: 346 87% 65%;
+    --ring: 142 71% 45%;
   }
 }
 
@@ -64,27 +103,24 @@
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground antialiased;
-    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
+
   ::selection {
-    background-color: #10b981;
-    color: #ffffff;
+    background-color: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
   }
-  .dark ::selection {
-    background-color: #059669;
-    color: #ffffff;
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 }
-
-@layer utilities {
-  .tabular-nums {
-    font-variant-numeric: tabular-nums;
-  }
-  .archival-hairline {
-    border-width: 1px;
-    border-color: hsl(var(--border));
-  }
-}
-

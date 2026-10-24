@@ -1,13 +1,18 @@
 import * as React from "react"
 import { cn } from "@/lib/utils"
+import { inputBaseClasses } from "./input"
 
-const Textarea = React.forwardRef(({ className, ...props }, ref) => {
+/**
+ * Textarea — area teks multi-baris dengan gaya yang sama seperti Input.
+ *
+ * Props tambahan:
+ * - `invalid` true → set `aria-invalid` (border merah).
+ */
+const Textarea = React.forwardRef(({ className, invalid, ...props }, ref) => {
   return (
     <textarea
-      className={cn(
-        "flex min-h-[80px] w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:border-emerald-600 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-50 dark:placeholder:text-slate-500",
-        className
-      )}
+      aria-invalid={invalid || undefined}
+      className={cn(inputBaseClasses, "flex min-h-[96px] py-2.5 leading-relaxed", className)}
       ref={ref}
       {...props}
     />

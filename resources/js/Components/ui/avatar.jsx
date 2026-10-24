@@ -5,7 +5,7 @@ const Avatar = React.forwardRef(({ className, ...props }, ref) => (
   <div
     ref={ref}
     className={cn(
-      "relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full ring-2 ring-emerald-600/20",
+      "relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full bg-muted",
       className
     )}
     {...props}
@@ -16,7 +16,13 @@ Avatar.displayName = "Avatar"
 const AvatarImage = React.forwardRef(({ className, src, alt = "", ...props }, ref) => {
   const [hasError, setHasError] = React.useState(!src)
 
-  if (hasError || !src) return null
+  React.useEffect(() => {
+    setHasError(!src)
+  }, [src])
+
+  if (hasError || !src) {
+    return null
+  }
 
   return (
     <img
@@ -35,7 +41,7 @@ const AvatarFallback = React.forwardRef(({ className, ...props }, ref) => (
   <div
     ref={ref}
     className={cn(
-      "flex h-full w-full items-center justify-center rounded-full bg-emerald-100 font-medium text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300",
+      "flex h-full w-full items-center justify-center rounded-full bg-primary-soft text-sm font-semibold text-primary",
       className
     )}
     {...props}

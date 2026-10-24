@@ -1,290 +1,429 @@
-import AdminLayout from '@/Layouts/AdminLayout';
+import { useState } from 'react';
 import { Head, Link } from '@inertiajs/react';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/Components/ui/card';
-import { Badge } from '@/Components/ui/badge';
-import { Button } from '@/Components/ui/button';
-import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/Components/ui/table';
-import { Separator } from '@/Components/ui/separator';
-import { Avatar, AvatarFallback } from '@/Components/ui/avatar';
 import {
-    Award,
-    BookOpen,
-    Building2,
-    Calendar,
-    CheckCircle2,
-    ClipboardCheck,
-    Clock,
-    FileSpreadsheet,
-    GraduationCap,
-    HeartHandshake,
+    CalendarDays,
+    ChartColumn,
+    CircleCheck,
+    ClipboardList,
+    ListChecks,
     MessageSquare,
     Newspaper,
-    PlusCircle,
-    TrendingUp,
+    Table2,
     Users,
-    Sparkles,
 } from 'lucide-react';
+import AdminLayout from '@/Layouts/AdminLayout';
+import { initialsFromName } from '@/Layouts/Partials/navigation';
+import {
+    Avatar,
+    AvatarFallback,
+    Badge,
+    Button,
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+    EmptyState,
+    PageHeader,
+    Progress,
+    StatCard,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/Components/ui';
+import { cn } from '@/lib/utils';
 
-export default function AdminDashboard({ stats, activeKuesioner, recentAlumni = [], statusBreakdown = {} }) {
-    const statusBadges = {
-        pengabdian: { label: 'Khidmah Pesantren', variant: 'emerald' },
-        kuliah_islam: { label: 'Studi Islam / LN', variant: 'emerald' },
-        kuliah_umum: { label: 'Kuliah Umum PTN/PTS', variant: 'blue' },
-        bekerja: { label: 'Bekerja Profesional', variant: 'secondary' },
-        wirausaha: { label: 'Wirausaha / Mandiri', variant: 'amber' },
-        mencari_kerja: { label: 'Persiapan Karir', variant: 'outline' },
-        lainnya: { label: 'Lainnya', variant: 'outline' },
+/**
+ * Status kegiatan alumni dalam urutan tetap palet grafik (DESIGN.md §2.3).
+ * Kelas ditulis lengkap agar terdeteksi Tailwind JIT.
+ */
+const STATUS_OPTIONS = [
+    { key: 'pengabdian', label: 'Pengabdian / Khidmah', colorClass: 'bg-chart-1' },
+    { key: 'kuliah_islam', label: 'Kuliah Keislaman', colorClass: 'bg-chart-2' },
+    { key: 'kuliah_umum', label: 'Kuliah Umum', colorClass: 'bg-chart-3' },
+    { key: 'bekerja', label: 'Bekerja', colorClass: 'bg-chart-4' },
+    { key: 'wirausaha', label: 'Wirausaha', colorClass: 'bg-chart-5' },
+    { key: 'mencari_kerja', label: 'Mencari Kerja', colorClass: 'bg-chart-6' },
+    { key: 'lainnya', label: 'Lainnya', colorClass: 'bg-chart-7' },
+];
+
+const FALLBACK_STATUS = STATUS_OPTIONS[STATUS_OPTIONS.length - 1];
+
+const numberFormatter = new Intl.NumberFormat('id-ID');
+const percentFormatter = new Intl.NumberFormat('id-ID', { style: 'percent', maximumFractionDigits: 1 });
+const dateFormatter = new Intl.DateTimeFormat('id-ID', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    timeZone: 'Asia/Jakarta',
+});
+
+function formatNumber(value) {
+    return numberFormatter.format(Number(value) || 0);
+}
+
+/** `ratio` berupa pecahan 0–1, mis. 0.625 → "62,5%". */
+function formatPercent(ratio) {
+    return percentFormatter.format(Number(ratio) || 0);
+}
+
+function formatDate(value) {
+    if (!value) {
+        return null;
+    }
+
+    const date = new Date(value);
+
+    return Number.isNaN(date.getTime()) ? null : dateFormatter.format(date);
+}
+
+function findStatus(statusKey) {
+    return STATUS_OPTIONS.find((status) => status.key === statusKey) ?? FALLBACK_STATUS;
+}
+
+/** Menggabungkan `statusBreakdown` ke urutan tetap; kunci tak dikenal masuk "Lainnya". */
+function buildStatusRows(statusBreakdown) {
+    const counts = Object.fromEntries(STATUS_OPTIONS.map((status) => [status.key, 0]));
+
+    Object.entries(statusBreakdown ?? {}).forEach(([statusKey, count]) => {
+        counts[findStatus(statusKey).key] += Number(count) || 0;
+    });
+
+    const total = Object.values(counts).reduce((sum, count) => sum + count, 0);
+
+    return {
+        total,
+        rows: STATUS_OPTIONS.map((status) => ({
+            ...status,
+            count: counts[status.key],
+            ratio: total > 0 ? counts[status.key] / total : 0,
+        })),
     };
+}
+
+function StatusBadge({ statusKey }) {
+    if (!statusKey) {
+        return <span className="text-muted-foreground">–</span>;
+    }
+
+    const status = findStatus(statusKey);
 
     return (
-        <AdminLayout header="Ringkasan Analitik Tracer Study">
-            <Head title="Admin Dashboard - Tracer Study" />
+        <Badge variant="neutral">
+            <span aria-hidden="true" className={cn('size-2 rounded-full', status.colorClass)} />
+            {status.label}
+        </Badge>
+    );
+}
 
-            {/* 4 Metric Stat Cards with Shadcn Card */}
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                <Card className="hover:shadow-md transition-shadow">
-                    <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                        <CardTitle className="text-xs font-medium text-slate-500">Total Santri Terdata</CardTitle>
-                        <div className="rounded-lg bg-emerald-100/70 p-2 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
-                            <Users className="h-4 w-4" />
-                        </div>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
-                            {stats.total_alumni}
-                        </div>
-                        <p className="mt-1 text-[11px] text-slate-500">Alumni lulusan MA terdaftar</p>
-                    </CardContent>
-                </Card>
-
-                <Card className="hover:shadow-md transition-shadow">
-                    <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                        <CardTitle className="text-xs font-medium text-slate-500">Tingkat Partisipasi</CardTitle>
-                        <div className="rounded-lg bg-blue-100/70 p-2 text-blue-800 dark:bg-blue-950 dark:text-blue-300">
-                            <TrendingUp className="h-4 w-4" />
-                        </div>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
-                            {stats.response_rate}%
-                        </div>
-                        <p className="mt-1 text-[11px] text-slate-500">
-                            {stats.total_responses} santri telah mengisi kuesioner
-                        </p>
-                    </CardContent>
-                </Card>
-
-                <Card className="hover:shadow-md transition-shadow">
-                    <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                        <CardTitle className="text-xs font-medium text-slate-500">Artikel & Agenda</CardTitle>
-                        <div className="rounded-lg bg-teal-100/70 p-2 text-teal-800 dark:bg-teal-950 dark:text-teal-300">
-                            <Newspaper className="h-4 w-4" />
-                        </div>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
-                            {stats.total_berita}
-                        </div>
-                        <p className="mt-1 text-[11px] text-slate-500">Kabar pondok, event & beasiswa</p>
-                    </CardContent>
-                </Card>
-
-                <Card className="hover:shadow-md transition-shadow">
-                    <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                        <CardTitle className="text-xs font-medium text-slate-500">Ruang Konsultasi</CardTitle>
-                        <div className="rounded-lg bg-amber-100/70 p-2 text-amber-800 dark:bg-amber-950 dark:text-amber-300">
-                            <MessageSquare className="h-4 w-4" />
-                        </div>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
-                            {stats.total_conversations}
-                        </div>
-                        <p className="mt-1 text-[11px] text-slate-500">Obrolan langsung alumni & admin</p>
-                    </CardContent>
-                </Card>
-            </div>
-
-            <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
-                {/* Active Questionnaire Banner */}
-                <Card className="lg:col-span-2">
-                    <CardHeader className="pb-3">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <CardTitle className="text-base font-bold">Survei Tracer Study Aktif</CardTitle>
-                                <CardDescription className="text-xs">
-                                    Instrumen kuesioner evaluasi yang sedang dibuka untuk alumni
-                                </CardDescription>
-                            </div>
-                            <Badge variant="emerald" className="gap-1 px-2.5 py-0.5">
-                                <CheckCircle2 className="h-3 w-3" /> Berjalan
-                            </Badge>
-                        </div>
-                    </CardHeader>
-
-                    <CardContent className="space-y-4">
-                        {activeKuesioner ? (
-                            <div className="rounded-lg border border-slate-200/80 p-4 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-900/50 space-y-3">
-                                <div>
-                                    <h4 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-                                        {activeKuesioner.title}
-                                    </h4>
-                                    <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
-                                        {activeKuesioner.description}
-                                    </p>
-                                </div>
-
-                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2 text-xs">
-                                    <div>
-                                        <span className="text-slate-400 block text-[11px]">Total Butir:</span>
-                                        <p className="font-semibold text-slate-800 dark:text-slate-200">
-                                            {activeKuesioner.pertanyaan_count} Pertanyaan
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <span className="text-slate-400 block text-[11px]">Target Angkatan:</span>
-                                        <p className="font-semibold text-slate-800 dark:text-slate-200">
-                                            {activeKuesioner.target_graduation_years?.join(', ') || 'Semua Lulusan'}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <span className="text-slate-400 block text-[11px]">Batas Pengisian:</span>
-                                        <p className="font-semibold text-slate-800 dark:text-slate-200">
-                                            {activeKuesioner.end_date}
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="rounded-lg border border-dashed border-slate-300 p-6 text-center text-xs text-slate-500">
-                                Belum ada kuesioner aktif yang diterbitkan.
-                            </div>
-                        )}
-                    </CardContent>
-
-                    <CardFooter className="flex flex-wrap gap-2 pt-3 border-t border-slate-100 dark:border-slate-800/80">
-                        <Button size="sm" className="gap-1.5 bg-emerald-700 hover:bg-emerald-800 text-white">
-                            <PlusCircle className="h-3.5 w-3.5" />
-                            Buat Kuesioner Baru
-                        </Button>
-                        <Button variant="outline" size="sm" className="gap-1.5">
-                            <FileSpreadsheet className="h-3.5 w-3.5 text-emerald-700" />
-                            Import Data Alumni
-                        </Button>
-                    </CardFooter>
-                </Card>
-
-                {/* Status Distribution Breakdown */}
-                <Card>
-                    <CardHeader className="pb-3">
-                        <CardTitle className="text-base font-bold">Persebaran Status Santri</CardTitle>
-                        <CardDescription className="text-xs">
-                            Aktivitas alumni setelah kelulusan
-                        </CardDescription>
-                    </CardHeader>
-
-                    <CardContent className="space-y-3">
-                        {Object.entries(statusBadges).map(([key, config]) => {
-                            const count = statusBreakdown[key] || 0;
-                            return (
-                                <div key={key} className="flex items-center justify-between text-xs">
-                                    <Badge variant={config.variant} className="font-medium">
-                                        {config.label}
-                                    </Badge>
-                                    <span className="font-bold text-slate-800 dark:text-slate-200">
-                                        {count} santri
-                                    </span>
-                                </div>
-                            );
-                        })}
-                    </CardContent>
-                </Card>
-            </div>
-
-            {/* Recent Registered Alumni Table with Shadcn Table */}
-            <Card className="mt-6">
-                <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800/80">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <CardTitle className="text-base font-bold">Daftar Santri Terdaftar Terbaru</CardTitle>
-                            <CardDescription className="text-xs">
-                                Rekam data alumni yang baru saja mendaftar mandiri atau diinput
-                            </CardDescription>
-                        </div>
-                        <Badge variant="outline" className="text-xs">
-                            {recentAlumni.length} Data Terkini
-                        </Badge>
-                    </div>
+function ActiveKuesionerCard({ kuesioner, stats }) {
+    if (!kuesioner) {
+        return (
+            <Card className="lg:col-span-2">
+                <CardHeader>
+                    <CardTitle>Kuesioner aktif</CardTitle>
                 </CardHeader>
+                <CardContent>
+                    <EmptyState
+                        icon={ClipboardList}
+                        title="Belum ada kuesioner aktif"
+                        description="Kuesioner yang sedang dibuka untuk alumni akan tampil di sini."
+                        className="py-6"
+                    />
+                </CardContent>
+            </Card>
+        );
+    }
 
-                <CardContent className="p-0">
-                    <Table>
+    const startDate = formatDate(kuesioner.start_date);
+    const endDate = formatDate(kuesioner.end_date);
+    const period = startDate && endDate ? `${startDate} – ${endDate}` : (startDate ?? endDate ?? 'Belum ditentukan');
+    const responseRatio = (Number(stats.response_rate) || 0) / 100;
+    const responseSummary = `${formatNumber(stats.total_responses)} dari ${formatNumber(stats.total_alumni)} alumni`;
+
+    return (
+        <Card className="lg:col-span-2">
+            <CardHeader>
+                <div className="flex items-start justify-between gap-3">
+                    <CardTitle>Kuesioner aktif</CardTitle>
+                    <Badge variant="success" icon={CircleCheck}>
+                        Berjalan
+                    </Badge>
+                </div>
+                <CardDescription className="text-base font-semibold text-foreground">{kuesioner.title}</CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-6">
+                <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div className="flex items-start gap-3">
+                        <CalendarDays aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+                        <div>
+                            <dt className="text-xs font-medium text-muted-foreground">Periode</dt>
+                            <dd className="text-sm font-semibold text-foreground">{period}</dd>
+                        </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                        <ListChecks aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+                        <div>
+                            <dt className="text-xs font-medium text-muted-foreground">Jumlah pertanyaan</dt>
+                            <dd className="text-sm font-semibold tabular-nums text-foreground">
+                                {formatNumber(kuesioner.pertanyaan_count)} pertanyaan
+                            </dd>
+                        </div>
+                    </div>
+                </dl>
+
+                <div className="flex flex-col gap-2">
+                    <div className="flex items-baseline justify-between gap-3">
+                        <p className="text-sm font-medium text-muted-foreground">Response rate</p>
+                        <p className="text-sm font-semibold tabular-nums text-foreground">{formatPercent(responseRatio)}</p>
+                    </div>
+                    <Progress
+                        value={responseRatio * 100}
+                        label="Response rate kuesioner"
+                        valueText={`${formatPercent(responseRatio)}, ${responseSummary}`}
+                        className="h-2"
+                    />
+                    <p className="text-xs text-muted-foreground tabular-nums">{responseSummary} telah mengisi</p>
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
+
+function StatusDistributionCard({ statusBreakdown }) {
+    const [isTableView, setIsTableView] = useState(false);
+    const { total, rows } = buildStatusRows(statusBreakdown);
+
+    return (
+        <Card className="lg:col-span-3">
+            <CardHeader>
+                <div className="flex items-start justify-between gap-3">
+                    <div className="space-y-1">
+                        <CardTitle>Distribusi Status Kegiatan</CardTitle>
+                        <CardDescription>
+                            Kegiatan alumni setelah lulus
+                            {total > 0 && <span className="tabular-nums"> · {formatNumber(total)} alumni</span>}
+                        </CardDescription>
+                    </div>
+                    {total > 0 && (
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            aria-pressed={isTableView}
+                            onClick={() => setIsTableView((current) => !current)}
+                            className="shrink-0"
+                        >
+                            {isTableView ? <ChartColumn aria-hidden="true" /> : <Table2 aria-hidden="true" />}
+                            {isTableView ? 'Lihat sebagai grafik' : 'Lihat sebagai tabel'}
+                        </Button>
+                    )}
+                </div>
+            </CardHeader>
+            <CardContent>
+                {total === 0 ? (
+                    <EmptyState
+                        icon={ChartColumn}
+                        title="Belum ada data status"
+                        description="Distribusi akan tampil setelah alumni melengkapi profil."
+                        className="py-6"
+                    />
+                ) : isTableView ? (
+                    <Table containerClassName="rounded-md border border-border">
                         <TableHeader>
                             <TableRow>
-                                <TableHead>Nama Santri</TableHead>
-                                <TableHead>NISN / Stambuk</TableHead>
-                                <TableHead>Peminatan MA</TableHead>
-                                <TableHead>Tahun Lulus</TableHead>
-                                <TableHead>Capaian Tahfidz</TableHead>
-                                <TableHead>Status Terkini</TableHead>
+                                <TableHead>Status kegiatan</TableHead>
+                                <TableHead numeric>Jumlah alumni</TableHead>
+                                <TableHead numeric>Persentase</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {recentAlumni && recentAlumni.length > 0 ? (
-                                recentAlumni.map((alumni) => {
-                                    const badgeCfg = statusBadges[alumni.profile?.current_status] || {
-                                        label: alumni.profile?.current_status || '-',
-                                        variant: 'outline',
-                                    };
-                                    return (
-                                        <TableRow key={alumni.id}>
-                                            <TableCell className="font-semibold text-slate-900 dark:text-slate-100">
-                                                <div className="flex items-center gap-2.5">
-                                                    <Avatar className="h-7 w-7">
-                                                        <AvatarFallback className="text-[10px] bg-emerald-700 text-white font-bold">
-                                                            {alumni.name?.charAt(0)}
-                                                        </AvatarFallback>
-                                                    </Avatar>
-                                                    <span>{alumni.name}</span>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell className="font-mono text-xs text-slate-600 dark:text-slate-400">
-                                                {alumni.nisn || alumni.profile?.stambuk_number || '-'}
-                                            </TableCell>
-                                            <TableCell className="text-xs">
-                                                {alumni.profile?.major || '-'}
-                                            </TableCell>
-                                            <TableCell className="text-xs">
-                                                {alumni.profile?.graduation_year || '-'}
-                                            </TableCell>
-                                            <TableCell className="text-xs">
-                                                {alumni.profile?.tahfidz_count ? (
-                                                    <Badge variant="emerald" className="font-semibold text-[11px]">
-                                                        {alumni.profile.tahfidz_count} Juz
-                                                    </Badge>
-                                                ) : (
-                                                    <span className="text-slate-400">-</span>
-                                                )}
-                                            </TableCell>
-                                            <TableCell>
-                                                <Badge variant={badgeCfg.variant} className="text-[11px]">
-                                                    {badgeCfg.label}
-                                                </Badge>
-                                            </TableCell>
-                                        </TableRow>
-                                    );
-                                })
-                            ) : (
-                                <TableRow>
-                                    <TableCell colSpan={6} className="text-center py-6 text-slate-500">
-                                        Belum ada data santri yang terdaftar.
-                                    </TableCell>
+                            {rows.map((row) => (
+                                <TableRow key={row.key}>
+                                    <TableCell className="font-medium">{row.label}</TableCell>
+                                    <TableCell numeric>{formatNumber(row.count)}</TableCell>
+                                    <TableCell numeric>{formatPercent(row.ratio)}</TableCell>
                                 </TableRow>
-                            )}
+                            ))}
                         </TableBody>
                     </Table>
-                </CardContent>
-            </Card>
+                ) : (
+                    <ul className="flex flex-col gap-4">
+                        {rows.map((row) => (
+                            <li key={row.key} className="flex flex-col gap-1.5">
+                                <div className="flex items-baseline justify-between gap-3 text-sm">
+                                    <span className="font-medium text-foreground">{row.label}</span>
+                                    <span className="shrink-0 tabular-nums text-muted-foreground">
+                                        <span className="font-semibold text-foreground">{formatNumber(row.count)}</span>
+                                        {' · '}
+                                        {formatPercent(row.ratio)}
+                                    </span>
+                                </div>
+                                <div aria-hidden="true" className="h-2 w-full overflow-hidden rounded-full bg-muted">
+                                    <div
+                                        className={cn('h-full rounded-full', row.colorClass)}
+                                        style={{ width: `${row.ratio * 100}%` }}
+                                    />
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
+                )}
+            </CardContent>
+        </Card>
+    );
+}
+
+function AlumniIdentity({ alumni }) {
+    return (
+        <div className="flex min-w-0 items-center gap-3">
+            <Avatar className="size-8">
+                <AvatarFallback className="text-xs">{initialsFromName(alumni.name)}</AvatarFallback>
+            </Avatar>
+            <span className="truncate font-semibold text-foreground">{alumni.name}</span>
+        </div>
+    );
+}
+
+function RecentAlumniSection({ recentAlumni }) {
+    const alumniIndexAvailable = route().has('admin.alumni.index');
+
+    return (
+        <section aria-labelledby="alumni-terbaru-heading" className="flex flex-col gap-4">
+            <div className="flex items-center justify-between gap-3">
+                <h2 id="alumni-terbaru-heading" className="text-lg font-semibold text-foreground">
+                    Alumni Terbaru
+                </h2>
+                {alumniIndexAvailable && recentAlumni.length > 0 && (
+                    <Button variant="link" asChild>
+                        <Link href={route('admin.alumni.index')}>Lihat semua</Link>
+                    </Button>
+                )}
+            </div>
+
+            {recentAlumni.length === 0 ? (
+                <Card>
+                    <EmptyState
+                        icon={Users}
+                        title="Belum ada alumni"
+                        description="Alumni yang baru terdaftar akan tampil di sini."
+                    />
+                </Card>
+            ) : (
+                <>
+                    <Card className="hidden overflow-hidden md:block">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Nama</TableHead>
+                                    <TableHead>NISN</TableHead>
+                                    <TableHead>Angkatan</TableHead>
+                                    <TableHead>Status kegiatan</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {recentAlumni.map((alumni) => (
+                                    <TableRow key={alumni.id}>
+                                        <TableCell>
+                                            <AlumniIdentity alumni={alumni} />
+                                        </TableCell>
+                                        <TableCell className="font-mono text-[13px] text-muted-foreground">
+                                            {alumni.nisn || '–'}
+                                        </TableCell>
+                                        <TableCell className="tabular-nums">
+                                            {alumni.profile?.graduation_year || '–'}
+                                        </TableCell>
+                                        <TableCell>
+                                            <StatusBadge statusKey={alumni.profile?.current_status} />
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </Card>
+
+                    <ul className="flex flex-col gap-3 md:hidden">
+                        {recentAlumni.map((alumni) => (
+                            <li key={alumni.id}>
+                                <Card className="flex flex-col gap-3 p-4">
+                                    <AlumniIdentity alumni={alumni} />
+                                    <dl className="grid grid-cols-2 gap-3 text-sm">
+                                        <div>
+                                            <dt className="text-xs font-medium text-muted-foreground">NISN</dt>
+                                            <dd className="font-mono text-[13px] text-foreground">{alumni.nisn || '–'}</dd>
+                                        </div>
+                                        <div>
+                                            <dt className="text-xs font-medium text-muted-foreground">Angkatan</dt>
+                                            <dd className="tabular-nums text-foreground">
+                                                {alumni.profile?.graduation_year || '–'}
+                                            </dd>
+                                        </div>
+                                    </dl>
+                                    <div>
+                                        <StatusBadge statusKey={alumni.profile?.current_status} />
+                                    </div>
+                                </Card>
+                            </li>
+                        ))}
+                    </ul>
+                </>
+            )}
+        </section>
+    );
+}
+
+export default function AdminDashboard({ stats, activeKuesioner, recentAlumni = [], statusBreakdown = {} }) {
+    const responseRatio = (Number(stats.response_rate) || 0) / 100;
+
+    return (
+        <AdminLayout
+            title="Ringkasan"
+            header={
+                <PageHeader
+                    title="Ringkasan Tracer Study"
+                    description="Pantau partisipasi alumni, kuesioner yang berjalan, dan kegiatan alumni setelah lulus."
+                />
+            }
+        >
+            <Head title="Ringkasan" />
+
+            <div className="flex flex-col gap-4 md:gap-6">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-6 lg:grid-cols-4">
+                    <StatCard
+                        label="Total alumni"
+                        value={formatNumber(stats.total_alumni)}
+                        hint="Alumni terdaftar"
+                        icon={Users}
+                    />
+                    <StatCard
+                        label="Response rate"
+                        value={formatPercent(responseRatio)}
+                        hint={`${formatNumber(stats.total_responses)} dari ${formatNumber(stats.total_alumni)} alumni`}
+                        icon={ChartColumn}
+                    />
+                    <StatCard
+                        label="Kabar terbit"
+                        value={formatNumber(stats.total_berita)}
+                        hint="Kabar, agenda & info"
+                        icon={Newspaper}
+                    />
+                    <StatCard
+                        label="Percakapan"
+                        value={formatNumber(stats.total_conversations)}
+                        hint="Pesan alumni & admin"
+                        icon={MessageSquare}
+                    />
+                </div>
+
+                <div className="grid grid-cols-1 gap-4 md:gap-6 lg:grid-cols-5">
+                    <ActiveKuesionerCard kuesioner={activeKuesioner} stats={stats} />
+                    <StatusDistributionCard statusBreakdown={statusBreakdown} />
+                </div>
+
+                <RecentAlumniSection recentAlumni={recentAlumni ?? []} />
+            </div>
         </AdminLayout>
     );
 }

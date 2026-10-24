@@ -8,6 +8,8 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Symfony\Component\HttpFoundation\Response;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -31,4 +33,28 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
+
+        $exceptions->respond(function (Response $response, Throwable $exception, Request $request): Response {
+            $status = $response->getStatusCode();
+
+            if ($request->is('api/*') || $request->expectsJson()) {
+                return $response;
+            }
+
+            if ($status === 419) {
+                return back()->with('error', 'Sesi Anda telah berakhir. Silakan muat ulang halaman, lalu coba lagi.');
+            }
+
+            $isAlwaysRendered = in_array($status, [403, 404], true);
+            $isRenderedOutsideLocal = in_array($status, [500, 503], true)
+                && ! app()->environment(['local', 'testing']);
+
+            if ($isAlwaysRendered || $isRenderedOutsideLocal) {
+                return Inertia::render('Error', ['status' => $status])
+                    ->toResponse($request)
+                    ->setStatusCode($status);
+            }
+
+            return $response;
+        });
     })->create();

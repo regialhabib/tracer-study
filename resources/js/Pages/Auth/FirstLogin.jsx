@@ -1,12 +1,15 @@
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/Components/ui/card';
-import { Button } from '@/Components/ui/button';
-import { Input } from '@/Components/ui/input';
-import { Label } from '@/Components/ui/label';
-import { Badge } from '@/Components/ui/badge';
-import { Alert, AlertTitle, AlertDescription } from '@/Components/ui/alert';
+import { Button, FieldError, FieldHint, Input, Label } from '@/Components/ui';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, useForm } from '@inertiajs/react';
-import { KeyRound, Sparkles, ArrowRight, ShieldCheck } from 'lucide-react';
+
+/**
+ * Bangun nilai `aria-describedby` dari id teks bantuan dan id pesan error (bila ada).
+ */
+function describedBy(hintId, errorId, error) {
+    const ids = [hintId, error ? errorId : null].filter(Boolean);
+
+    return ids.length > 0 ? ids.join(' ') : undefined;
+}
 
 export default function FirstLogin({ user }) {
     const { data, setData, post, processing, errors } = useForm({
@@ -23,109 +26,115 @@ export default function FirstLogin({ user }) {
 
     return (
         <GuestLayout>
-            <Head title="Aktivasi Akun Santri - First Login" />
+            <Head title="Lengkapi Akun" />
 
-            <Card className="shadow-lg border-slate-200/80 dark:border-slate-800">
-                <CardHeader className="space-y-1 text-center pb-4">
-                    <div className="flex justify-center mb-1">
-                        <Badge variant="emerald" className="gap-1 px-3 py-1 text-xs">
-                            <Sparkles className="h-3 w-3" /> Aktivasi Akun Baru
-                        </Badge>
+            <div className="flex flex-col gap-6">
+                <header className="flex flex-col gap-1 text-center">
+                    <p className="text-sm font-medium text-primary">Ahlan wa sahlan, {user.name}</p>
+                    <h1 className="text-[22px] font-bold tracking-tight text-foreground md:text-2xl">
+                        Lengkapi Akun Anda
+                    </h1>
+                    <p className="text-sm text-muted-foreground">
+                        Lengkapi akun Anda sebelum melanjutkan. Kami memerlukan email aktif untuk mengirim
+                        informasi tracer study, dan kata sandi baru agar akun Anda tetap aman.
+                    </p>
+                </header>
+
+                <dl className="grid grid-cols-2 gap-3 rounded-lg bg-muted px-4 py-3 text-sm">
+                    <div className="flex min-w-0 flex-col gap-0.5">
+                        <dt className="text-xs font-medium text-muted-foreground">NISN</dt>
+                        <dd className="break-all font-mono font-medium text-foreground">{user.nisn || '-'}</dd>
                     </div>
-                    <CardTitle className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
-                        Ahlan wa Sahlan, {user.name}!
-                    </CardTitle>
-                    <CardDescription className="text-xs text-slate-500">
-                        Mohon lengkapi email aktif dan password baru untuk mengamankan akun alumni Anda
-                    </CardDescription>
-                </CardHeader>
+                    <div className="flex min-w-0 flex-col gap-0.5">
+                        <dt className="text-xs font-medium text-muted-foreground">Jurusan</dt>
+                        <dd className="break-words font-medium text-foreground">{user.profile?.major || '-'}</dd>
+                    </div>
+                </dl>
 
-                <CardContent className="space-y-4">
-                    <Alert variant="emerald" className="py-3">
-                        <KeyRound className="h-4 w-4" />
-                        <AlertTitle className="text-xs font-semibold">Data Kelulusan Santri</AlertTitle>
-                        <AlertDescription className="text-xs text-emerald-800/90 dark:text-emerald-300">
-                            NISN: <span className="font-mono font-bold">{user.nisn}</span> &bull; Jurusan: <span className="font-semibold">{user.profile?.major || '-'}</span>
-                        </AlertDescription>
-                    </Alert>
+                <form onSubmit={submit} className="flex flex-col gap-4">
+                    <div className="flex flex-col gap-1.5">
+                        <Label htmlFor="email" required>
+                            Email Aktif
+                        </Label>
+                        <Input
+                            id="email"
+                            type="email"
+                            name="email"
+                            value={data.email}
+                            autoComplete="email"
+                            placeholder="nama@email.com"
+                            invalid={Boolean(errors.email)}
+                            aria-describedby={describedBy(null, 'email-error', errors.email)}
+                            onChange={(e) => setData('email', e.target.value)}
+                            required
+                        />
+                        <FieldError id="email-error" message={errors.email} />
+                    </div>
 
-                    <form onSubmit={submit} className="space-y-4">
-                        <div className="space-y-1.5">
-                            <Label htmlFor="email">Alamat Email Aktif</Label>
-                            <Input
-                                id="email"
-                                type="email"
-                                name="email"
-                                value={data.email}
-                                placeholder="alumni@contoh.com"
-                                onChange={(e) => setData('email', e.target.value)}
-                                required
-                            />
-                            {errors.email && (
-                                <p className="text-xs text-red-600 font-medium">{errors.email}</p>
+                    <div className="flex flex-col gap-1.5">
+                        <Label htmlFor="phone_number">Nomor WhatsApp Aktif</Label>
+                        <FieldHint id="phone_number-hint">Opsional, agar kami mudah menghubungi Anda.</FieldHint>
+                        <Input
+                            id="phone_number"
+                            type="tel"
+                            name="phone_number"
+                            value={data.phone_number}
+                            autoComplete="tel"
+                            inputMode="tel"
+                            placeholder="Contoh: 081234567890"
+                            invalid={Boolean(errors.phone_number)}
+                            aria-describedby={describedBy('phone_number-hint', 'phone_number-error', errors.phone_number)}
+                            onChange={(e) => setData('phone_number', e.target.value)}
+                        />
+                        <FieldError id="phone_number-error" message={errors.phone_number} />
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                        <Label htmlFor="password" required>
+                            Kata Sandi Baru
+                        </Label>
+                        <FieldHint id="password-hint">Minimal 8 karakter. Jangan bagikan kepada siapa pun.</FieldHint>
+                        <Input
+                            id="password"
+                            type="password"
+                            name="password"
+                            value={data.password}
+                            autoComplete="new-password"
+                            invalid={Boolean(errors.password)}
+                            aria-describedby={describedBy('password-hint', 'password-error', errors.password)}
+                            onChange={(e) => setData('password', e.target.value)}
+                            required
+                        />
+                        <FieldError id="password-error" message={errors.password} />
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                        <Label htmlFor="password_confirmation" required>
+                            Ulangi Kata Sandi Baru
+                        </Label>
+                        <Input
+                            id="password_confirmation"
+                            type="password"
+                            name="password_confirmation"
+                            value={data.password_confirmation}
+                            autoComplete="new-password"
+                            invalid={Boolean(errors.password_confirmation)}
+                            aria-describedby={describedBy(
+                                null,
+                                'password_confirmation-error',
+                                errors.password_confirmation,
                             )}
-                        </div>
+                            onChange={(e) => setData('password_confirmation', e.target.value)}
+                            required
+                        />
+                        <FieldError id="password_confirmation-error" message={errors.password_confirmation} />
+                    </div>
 
-                        <div className="space-y-1.5">
-                            <Label htmlFor="phone_number">Nomor WhatsApp Aktif</Label>
-                            <Input
-                                id="phone_number"
-                                type="tel"
-                                name="phone_number"
-                                value={data.phone_number}
-                                placeholder="Contoh: 081234567890"
-                                onChange={(e) => setData('phone_number', e.target.value)}
-                            />
-                            {errors.phone_number && (
-                                <p className="text-xs text-red-600 font-medium">{errors.phone_number}</p>
-                            )}
-                        </div>
-
-                        <div className="space-y-1.5">
-                            <Label htmlFor="password">Password Baru Pribadi</Label>
-                            <Input
-                                id="password"
-                                type="password"
-                                name="password"
-                                value={data.password}
-                                placeholder="Minimal 8 karakter"
-                                autoComplete="new-password"
-                                onChange={(e) => setData('password', e.target.value)}
-                                required
-                            />
-                            {errors.password && (
-                                <p className="text-xs text-red-600 font-medium">{errors.password}</p>
-                            )}
-                        </div>
-
-                        <div className="space-y-1.5">
-                            <Label htmlFor="password_confirmation">Ulangi Password Baru</Label>
-                            <Input
-                                id="password_confirmation"
-                                type="password"
-                                name="password_confirmation"
-                                value={data.password_confirmation}
-                                placeholder="Ketik ulang password baru Anda"
-                                autoComplete="new-password"
-                                onChange={(e) => setData('password_confirmation', e.target.value)}
-                                required
-                            />
-                            {errors.password_confirmation && (
-                                <p className="text-xs text-red-600 font-medium">{errors.password_confirmation}</p>
-                            )}
-                        </div>
-
-                        <Button
-                            type="submit"
-                            disabled={processing}
-                            className="w-full gap-2 bg-emerald-700 hover:bg-emerald-800 text-white font-medium shadow-md shadow-emerald-700/20"
-                        >
-                            <ShieldCheck className="h-4 w-4" />
-                            {processing ? 'Menyimpan Akun...' : 'Simpan & Lanjut ke Dashboard'}
-                        </Button>
-                    </form>
-                </CardContent>
-            </Card>
+                    <Button type="submit" size="lg" className="mt-2 w-full" loading={processing} loadingText="Menyimpan…">
+                        Simpan &amp; Lanjutkan
+                    </Button>
+                </form>
+            </div>
         </GuestLayout>
     );
 }

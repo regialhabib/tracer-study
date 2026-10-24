@@ -1,210 +1,205 @@
-import { Link, usePage } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import {
+    ChartColumn,
     ClipboardList,
-    GraduationCap,
+    ExternalLink,
     LayoutDashboard,
     LogOut,
     Menu,
     MessageSquare,
     Newspaper,
-    Shield,
+    ShieldCheck,
+    UserCheck,
+    UserRound,
     Users,
-    X,
-    ExternalLink,
 } from 'lucide-react';
-import { useState } from 'react';
-import { Avatar, AvatarFallback } from '@/Components/ui/avatar';
-import { Badge } from '@/Components/ui/badge';
-import { Button } from '@/Components/ui/button';
-import { Separator } from '@/Components/ui/separator';
-import { Alert, AlertDescription } from '@/Components/ui/alert';
+import { useEffect, useState } from 'react';
+import { Button, DropdownMenuItem, DropdownMenuSeparator, Sheet, SheetBody, SheetHeader, SheetTitle } from '@/Components/ui';
+import { cn } from '@/lib/utils';
+import AppShell from './Partials/AppShell';
+import BrandLogo from './Partials/BrandLogo';
+import UserMenu from './Partials/UserMenu';
+import { COMING_SOON_LABEL, resolveNavItem } from './Partials/navigation';
 
-export default function AdminLayout({ header, children }) {
-    const { auth, flash } = usePage().props;
-    const user = auth.user;
-    const [sidebarOpen, setSidebarOpen] = useState(false);
+/**
+ * AdminLayout — kerangka panel admin (desktop-first, DESIGN.md §4.1).
+ *
+ * - ≥ lg: sidebar putih 256px dengan border kanan.
+ * - < lg: top bar dengan tombol menu yang membuka `Sheet` berisi navigasi yang sama.
+ * - Item yang route-nya belum ada tampil nonaktif "Segera hadir" dan otomatis aktif setelah route dibuat.
+ *
+ * Props:
+ * - `title`    judul halaman di top bar. Bila kosong dan `header` berupa string, `header` dipakai sebagai judul.
+ * - `header`   (opsional) node di atas konten (mis. `<PageHeader />`).
+ * - `children` isi halaman.
+ */
+const adminNavigationGroups = [
+    {
+        label: 'Utama',
+        items: [{ label: 'Ringkasan', icon: LayoutDashboard, routeName: 'admin.dashboard' }],
+    },
+    {
+        label: 'Data Alumni',
+        items: [
+            { label: 'Alumni', icon: Users, routeName: 'admin.alumni.index', activePattern: 'admin.alumni.*' },
+            { label: 'Verifikasi', icon: UserCheck, routeName: 'admin.verifikasi.index', activePattern: 'admin.verifikasi.*' },
+        ],
+    },
+    {
+        label: 'Tracer Study',
+        items: [
+            { label: 'Kuesioner', icon: ClipboardList, routeName: 'admin.kuesioner.index', activePattern: 'admin.kuesioner.*' },
+            { label: 'Analitik', icon: ChartColumn, routeName: 'admin.analitik.index', activePattern: 'admin.analitik.*' },
+        ],
+    },
+    {
+        label: 'Komunikasi',
+        items: [
+            { label: 'Berita', icon: Newspaper, routeName: 'admin.berita.index', activePattern: 'admin.berita.*' },
+            { label: 'Pesan', icon: MessageSquare, routeName: 'pesan.index', activePattern: 'pesan.*' },
+        ],
+    },
+    {
+        label: 'Pengaturan',
+        items: [
+            { label: 'Kelola Admin', icon: ShieldCheck, routeName: 'admin.pengguna.index', activePattern: 'admin.pengguna.*' },
+        ],
+    },
+];
 
-    const navigation = [
-        {
-            name: 'Dashboard Analitik',
-            href: route('admin.dashboard'),
-            icon: LayoutDashboard,
-            current: route().current('admin.dashboard'),
-        },
-        {
-            name: 'Kuesioner Builder',
-            href: '#',
-            icon: ClipboardList,
-            current: false,
-        },
-        {
-            name: 'Data Alumni & Import',
-            href: '#',
-            icon: Users,
-            current: false,
-        },
-        {
-            name: 'Berita & Agenda',
-            href: '#',
-            icon: Newspaper,
-            current: false,
-        },
-        {
-            name: 'Pesan & Konsultasi',
-            href: '#',
-            icon: MessageSquare,
-            current: false,
-        },
-    ];
+function SidebarNavItem({ item }) {
+    const Icon = item.icon;
+    const classes = 'flex h-10 items-center gap-3 rounded-md px-3 text-sm font-semibold transition-colors duration-150 ease-out [&_svg]:size-5 [&_svg]:shrink-0';
+
+    if (!item.isAvailable) {
+        return (
+            <span
+                aria-disabled="true"
+                title={COMING_SOON_LABEL}
+                className={cn(classes, 'cursor-not-allowed text-muted-foreground/70')}
+            >
+                <Icon aria-hidden="true" />
+                <span className="flex-1 truncate">{item.label}</span>
+                <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+                    {COMING_SOON_LABEL}
+                </span>
+            </span>
+        );
+    }
 
     return (
-        <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-50">
-            {/* Mobile Sidebar Backdrop */}
-            {sidebarOpen && (
-                <div
-                    className="fixed inset-0 z-40 bg-black/50 lg:hidden backdrop-blur-sm"
-                    onClick={() => setSidebarOpen(false)}
-                />
+        <Link
+            href={item.href}
+            aria-current={item.isActive ? 'page' : undefined}
+            className={cn(
+                classes,
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                item.isActive
+                    ? 'bg-primary-soft text-primary'
+                    : 'text-muted-foreground hover:bg-muted hover:text-foreground',
             )}
+        >
+            <Icon aria-hidden="true" />
+            <span className="flex-1 truncate">{item.label}</span>
+        </Link>
+    );
+}
 
-            {/* Sidebar Desktop & Mobile */}
-            <aside
-                className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-slate-200/80 bg-white transition-transform duration-200 dark:border-slate-800 dark:bg-slate-900 lg:translate-x-0 ${
-                    sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-                }`}
-            >
-                {/* Brand / Logo Header */}
-                <div className="flex h-16 items-center justify-between border-b border-slate-100 dark:border-slate-800/80 px-6">
-                    <Link href={route('admin.dashboard')} className="flex items-center gap-2.5">
-                        <img
-                            src="/images/logo.webp"
-                            alt="Logo PP RIYADHUL AMIEN"
-                            className="h-9 w-9 object-contain drop-shadow-sm"
-                        />
-                        <div>
-                            <span className="block text-sm font-bold text-slate-900 dark:text-slate-100 leading-tight">
-                                TRACER STUDY
-                            </span>
-                            <span className="block text-[10px] font-semibold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
-                                PP RIYADHUL AMIEN
-                            </span>
-                        </div>
-                    </Link>
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setSidebarOpen(false)}
-                        className="h-8 w-8 text-slate-400 hover:text-slate-700 lg:hidden"
-                    >
-                        <X className="h-5 w-5" />
-                    </Button>
+function SidebarNavigation({ groups }) {
+    return (
+        <nav aria-label="Navigasi admin" className="flex flex-col gap-6">
+            {groups.map((group) => (
+                <div key={group.label} className="flex flex-col gap-1">
+                    <p className="px-3 pb-1 text-xs font-medium text-muted-foreground">{group.label}</p>
+                    {group.items.map((item) => (
+                        <SidebarNavItem key={item.key} item={item} />
+                    ))}
                 </div>
+            ))}
+        </nav>
+    );
+}
 
-                {/* Nav Links */}
-                <nav className="flex-1 space-y-1.5 px-3 py-4">
-                    {navigation.map((item) => {
-                        const Icon = item.icon;
-                        return (
-                            <Link
-                                key={item.name}
-                                href={item.href}
-                                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-xs font-semibold transition ${
-                                    item.current
-                                        ? 'bg-emerald-50 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300'
-                                        : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100'
-                                }`}
+export default function AdminLayout({ title, header, children }) {
+    const [isNavigationOpen, setIsNavigationOpen] = useState(false);
+
+    const pageTitle = title ?? (typeof header === 'string' ? header : undefined);
+    const headerNode = typeof header === 'string' ? null : header;
+
+    const navigationGroups = adminNavigationGroups.map((group) => ({
+        ...group,
+        items: group.items.map(resolveNavItem),
+    }));
+
+    useEffect(() => router.on('navigate', () => setIsNavigationOpen(false)), []);
+
+    return (
+        <AppShell>
+            <div className="min-h-screen bg-background text-foreground">
+                <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-border bg-card lg:flex">
+                    <div className="flex h-16 shrink-0 items-center border-b border-border px-5">
+                        <BrandLogo href={route('admin.dashboard')} title="Tracer Alumni" subtitle="Panel Admin" />
+                    </div>
+                    <div className="flex-1 overflow-y-auto px-3 py-5">
+                        <SidebarNavigation groups={navigationGroups} />
+                    </div>
+                </aside>
+
+                <Sheet open={isNavigationOpen} onClose={() => setIsNavigationOpen(false)} side="left" className="lg:hidden">
+                    <SheetHeader className="border-b border-border">
+                        <SheetTitle className="sr-only">Navigasi admin</SheetTitle>
+                        <BrandLogo href={route('admin.dashboard')} title="Tracer Alumni" subtitle="Panel Admin" />
+                    </SheetHeader>
+                    <SheetBody className="px-3 py-5">
+                        <SidebarNavigation groups={navigationGroups} />
+                    </SheetBody>
+                </Sheet>
+
+                <div className="flex min-h-screen flex-col lg:pl-64">
+                    <header className="sticky top-0 z-20 border-b border-border bg-card">
+                        <div className="flex h-14 items-center gap-3 px-4 sm:px-6 lg:h-16 lg:px-8">
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setIsNavigationOpen(true)}
+                                aria-label="Buka menu navigasi"
+                                aria-expanded={isNavigationOpen}
+                                className="-ml-2 lg:hidden [&_svg]:size-5"
                             >
-                                <Icon className={`h-4 w-4 ${item.current ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-400'}`} />
-                                <span>{item.name}</span>
-                            </Link>
-                        );
-                    })}
-                </nav>
+                                <Menu aria-hidden="true" />
+                            </Button>
 
-                {/* Footer User Profile with Shadcn Avatar & Button */}
-                <div className="border-t border-slate-100 dark:border-slate-800/80 p-4">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2.5 min-w-0">
-                            <Avatar className="h-8 w-8">
-                                <AvatarFallback className="text-xs font-bold bg-emerald-700 text-white">
-                                    {user?.name?.charAt(0) || 'A'}
-                                </AvatarFallback>
-                            </Avatar>
+                            <img src="/images/logo.webp" alt="" aria-hidden="true" className="size-8 shrink-0 object-contain lg:hidden" />
+
                             <div className="min-w-0 flex-1">
-                                <p className="truncate text-xs font-semibold text-slate-900 dark:text-slate-100">
-                                    {user?.name}
-                                </p>
-                                <p className="truncate text-[10px] text-emerald-700 dark:text-emerald-400 font-medium">
-                                    Ustadz / Admin
-                                </p>
+                                {pageTitle && (
+                                    <p className="truncate text-base font-bold tracking-tight text-foreground lg:text-lg">
+                                        {pageTitle}
+                                    </p>
+                                )}
                             </div>
+
+                            <UserMenu>
+                                <DropdownMenuItem href="/" icon={ExternalLink}>
+                                    Lihat situs
+                                </DropdownMenuItem>
+                                <DropdownMenuItem href={route('profile.edit')} icon={UserRound}>
+                                    Profil
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem href={route('logout')} method="post" icon={LogOut} destructive>
+                                    Keluar
+                                </DropdownMenuItem>
+                            </UserMenu>
                         </div>
-                        <Button
-                            asChild
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30"
-                        >
-                            <Link
-                                href={route('logout')}
-                                method="post"
-                                as="button"
-                                title="Keluar dari Admin"
-                            >
-                                <LogOut className="h-4 w-4" />
-                            </Link>
-                        </Button>
-                    </div>
+                    </header>
+
+                    <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+                        {headerNode && <div className="mb-6">{headerNode}</div>}
+                        {children}
+                    </main>
                 </div>
-            </aside>
-
-            {/* Main Content Area */}
-            <div className="lg:pl-64">
-                {/* Topbar */}
-                <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-slate-200/80 bg-white/90 px-4 backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/90 sm:px-6 lg:px-8">
-                    <div className="flex items-center gap-3">
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => setSidebarOpen(true)}
-                            className="lg:hidden h-9 w-9 text-slate-600"
-                        >
-                            <Menu className="h-5 w-5" />
-                        </Button>
-                        {header && (
-                            <h1 className="text-base font-bold text-slate-900 dark:text-slate-100 sm:text-lg">
-                                {header}
-                            </h1>
-                        )}
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                        <Badge variant="emerald" className="hidden sm:inline-flex gap-1.5 py-1">
-                            <Shield className="h-3 w-3" />
-                            Mode Administrator
-                        </Badge>
-                        <Button asChild variant="outline" size="sm" className="gap-1.5 text-xs">
-                            <Link href={route('dashboard')}>
-                                <span className="hidden sm:inline">Lihat Portal Santri</span>
-                                <span className="sm:hidden">Portal Santri</span>
-                                <ExternalLink className="h-3.5 w-3.5 text-slate-400" />
-                            </Link>
-                        </Button>
-                    </div>
-                </header>
-
-                {/* Flash status messages with Shadcn Alert */}
-                {flash?.status && (
-                    <div className="mx-4 mt-4 sm:mx-8">
-                        <Alert variant="emerald">
-                            <AlertDescription>{flash.status}</AlertDescription>
-                        </Alert>
-                    </div>
-                )}
-
-                {/* Page Content */}
-                <main className="p-4 sm:p-6 lg:p-8">{children}</main>
             </div>
-        </div>
+        </AppShell>
     );
 }

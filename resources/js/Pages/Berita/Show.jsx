@@ -1,326 +1,163 @@
 import { useState } from 'react';
 import { Head, Link } from '@inertiajs/react';
-import { Badge } from '@/Components/ui/badge';
-import { Button } from '@/Components/ui/button';
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/Components/ui/card';
-import {
-    ArrowLeft,
-    ArrowRight,
-    Calendar,
-    Clock,
-    MapPin,
-    ExternalLink,
-    Check,
-    Share2,
-    GraduationCap,
-    Newspaper,
-    User,
-} from 'lucide-react';
+import { ArrowLeft, Calendar, CalendarClock, Check, Clock, ExternalLink, MapPin, Share2, User } from 'lucide-react';
+import { Button } from '@/Components/ui';
+import BeritaCard from '@/Components/berita/BeritaCard';
+import BeritaCover from '@/Components/berita/BeritaCover';
+import BeritaTypeBadge from '@/Components/berita/BeritaTypeBadge';
+import { formatLongDate, formatShortDate, formatTime } from '@/Components/berita/beritaMeta';
+import PublicLayout from '@/Layouts/PublicLayout';
 
 export default function Show({ auth, berita, beritaTerkait = [] }) {
     const [copied, setCopied] = useState(false);
 
     const handleCopyLink = () => {
-        if (typeof window !== 'undefined') {
-            navigator.clipboard.writeText(window.location.href);
+        if (typeof window === 'undefined' || !navigator.clipboard) {
+            return;
+        }
+
+        navigator.clipboard.writeText(window.location.href).then(() => {
             setCopied(true);
             setTimeout(() => setCopied(false), 2500);
-        }
-    };
-
-    const categoryBadgeVariant = (type) => {
-        switch (type) {
-            case 'agenda':
-                return 'amber';
-            case 'pengumuman':
-                return 'blue';
-            case 'info_beasiswa':
-                return 'emerald';
-            default:
-                return 'emerald';
-        }
-    };
-
-    const formatDate = (dateString) => {
-        if (!dateString) return '-';
-        return new Date(dateString).toLocaleDateString('id-ID', {
-            weekday: 'long',
-            day: 'numeric',
-            month: 'long',
-            year: 'numeric',
         });
     };
 
-    const formatEventDateTime = (dateString) => {
-        if (!dateString) return '-';
-        return new Date(dateString).toLocaleDateString('id-ID', {
-            weekday: 'long',
-            day: 'numeric',
-            month: 'long',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-        });
-    };
+    const publishedAt = berita.published_at || berita.created_at;
+    const publishedDate = formatShortDate(publishedAt);
+    const eventDate = formatLongDate(berita.event_date);
+    const eventTime = formatTime(berita.event_date);
+    const hasAgendaDetails = berita.type === 'agenda' || berita.event_date || berita.location;
 
     return (
-        <div className="min-h-screen bg-slate-50 text-slate-900 selection:bg-emerald-600 selection:text-white dark:bg-slate-950 dark:text-slate-50 flex flex-col font-sans">
+        <PublicLayout>
             <Head title={`${berita.title} - Pondok Pesantren RIYADHUL AMIEN`} />
 
-            {/* Navigation Header */}
-            <header className="sticky top-0 z-50 w-full border-b border-slate-200/80 bg-white/90 backdrop-blur-md dark:border-slate-800 dark:bg-slate-950/90">
-                <div className="container mx-auto flex h-16 max-w-5xl items-center justify-between px-4 sm:px-6 lg:px-8">
-                    <Link href="/" className="flex items-center gap-2.5 sm:gap-3 group">
-                        <img
-                            src="/images/logo.webp"
-                            alt="Logo Pondok Pesantren RIYADHUL AMIEN"
-                            className="h-10 w-10 sm:h-11 sm:w-11 object-contain drop-shadow-sm group-hover:scale-105 transition-transform"
-                        />
-                        <div>
-                            <span className="text-sm sm:text-base font-bold tracking-tight block leading-tight">
-                                TRACER STUDY
-                            </span>
-                            <span className="text-[10px] sm:text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 block tracking-wider uppercase">
-                                PP RIYADHUL AMIEN
-                            </span>
-                        </div>
+            <div className="py-6 md:py-12">
+                <article className="mx-auto flex max-w-3xl flex-col gap-6 px-4 sm:px-6 md:gap-8 lg:px-8">
+                    <Link
+                        href="/"
+                        className="inline-flex w-fit items-center gap-1.5 rounded-md text-sm font-semibold text-muted-foreground transition-colors duration-150 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    >
+                        <ArrowLeft aria-hidden="true" className="size-4" />
+                        Kembali ke Beranda
                     </Link>
 
-                    <div className="flex items-center gap-2">
-                        {auth?.user ? (
-                            <Button asChild size="sm" className="gap-1.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs sm:text-sm">
-                                <Link href={route(auth.user.role === 'admin' ? 'admin.dashboard' : 'dashboard')}>
-                                    Dashboard <ArrowRight className="h-3.5 w-3.5" />
-                                </Link>
-                            </Button>
-                        ) : (
-                            <Button asChild size="sm" variant="outline" className="gap-1.5 text-xs sm:text-sm">
-                                <Link href={route('login')}>
-                                    Masuk Santri
-                                </Link>
-                            </Button>
-                        )}
-                    </div>
-                </div>
-            </header>
+                    <header className="flex flex-col gap-4">
+                        <BeritaTypeBadge type={berita.type} className="w-fit" />
 
-            {/* Main Content Area */}
-            <main className="flex-1 py-8 sm:py-12">
-                <div className="container mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-                    {/* Back Link */}
-                    <div className="mb-6">
-                        <Link
-                            href="/"
-                            className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-emerald-700 dark:text-slate-400 dark:hover:text-emerald-300 transition-colors"
+                        <h1 className="text-2xl font-bold leading-tight tracking-tight text-foreground md:text-3xl">
+                            {berita.title}
+                        </h1>
+
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
+                            <span className="inline-flex items-center gap-1.5">
+                                <User aria-hidden="true" className="size-4" />
+                                Oleh {berita.author?.name || 'Sekretariat MA'}
+                            </span>
+                            {publishedDate && (
+                                <span className="inline-flex items-center gap-1.5">
+                                    <Calendar aria-hidden="true" className="size-4" />
+                                    <time dateTime={publishedAt}>{publishedDate}</time>
+                                </span>
+                            )}
+                        </div>
+                    </header>
+
+                    <BeritaCover
+                        src={berita.thumbnail}
+                        alt={berita.title}
+                        type={berita.type}
+                        loading="eager"
+                        className="rounded-xl border border-border"
+                    />
+
+                    {hasAgendaDetails && (
+                        <section
+                            aria-labelledby="agenda-heading"
+                            className="flex flex-col gap-4 rounded-lg border border-info/20 bg-info-soft p-4 md:p-6"
                         >
-                            <ArrowLeft className="h-3.5 w-3.5" />
-                            Kembali ke Beranda
-                        </Link>
-                    </div>
+                            <h2 id="agenda-heading" className="flex items-center gap-2 text-base font-semibold text-foreground">
+                                <CalendarClock aria-hidden="true" className="size-5 text-info" />
+                                Detail Agenda
+                            </h2>
 
-                    <article className="space-y-6 sm:space-y-8">
-                        {/* Article Header Metadata */}
-                        <header className="space-y-4">
-                            <div className="flex flex-wrap items-center gap-2.5">
-                                <Badge variant={categoryBadgeVariant(berita.type)} className="text-xs uppercase font-bold py-1 px-3">
-                                    {(berita.type || 'berita').replace('_', ' ')}
-                                </Badge>
-                                <span className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-                                    <Calendar className="h-3.5 w-3.5 text-emerald-600" />
-                                    {formatDate(berita.published_at || berita.created_at)}
-                                </span>
-                                <span className="text-xs text-slate-400">&bull;</span>
-                                <span className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-                                    <User className="h-3.5 w-3.5 text-emerald-600" />
-                                    Oleh {berita.author?.name || 'Sekretariat MA'}
-                                </span>
-                            </div>
-
-                            <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight">
-                                {berita.title}
-                            </h1>
-                        </header>
-
-                        {/* Featured Thumbnail */}
-                        {berita.thumbnail ? (
-                            <div className="relative aspect-[16/9] w-full overflow-hidden rounded-2xl bg-slate-100 dark:bg-slate-800 shadow-md border border-slate-200/80 dark:border-slate-800">
-                                <img
-                                    src={berita.thumbnail}
-                                    alt={berita.title}
-                                    className="w-full h-full object-cover"
-                                />
-                            </div>
-                        ) : (
-                            <div className="relative aspect-[21/9] w-full bg-emerald-50 dark:bg-emerald-950/40 rounded-2xl flex items-center justify-center text-emerald-600/40 border border-emerald-100 dark:border-emerald-900/40">
-                                <Newspaper className="h-16 w-16" />
-                            </div>
-                        )}
-
-                        {/* Special Agenda Box (If event_date or location exists) */}
-                        {(berita.type === 'agenda' || berita.event_date || berita.location) && (
-                            <div className="rounded-2xl border border-amber-200 bg-amber-50/70 p-5 sm:p-6 dark:border-amber-900/60 dark:bg-amber-950/30 space-y-4">
-                                <div className="flex items-center gap-2">
-                                    <Clock className="h-5 w-5 text-amber-700 dark:text-amber-400" />
-                                    <h2 className="text-sm sm:text-base font-bold text-amber-950 dark:text-amber-200">
-                                        Detail Agenda Kegiatan
-                                    </h2>
-                                </div>
-
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs sm:text-sm">
-                                    {berita.event_date && (
+                            {berita.event_date || berita.location ? (
+                                <div className="grid gap-4 text-sm sm:grid-cols-2">
+                                    {eventDate && (
                                         <div className="flex items-start gap-2.5">
-                                            <Calendar className="h-4 w-4 text-amber-700 dark:text-amber-400 mt-0.5 shrink-0" />
-                                            <div>
-                                                <span className="block font-semibold text-slate-700 dark:text-slate-300">Waktu Pelaksanaan</span>
-                                                <span className="text-slate-600 dark:text-slate-400">{formatEventDateTime(berita.event_date)} WIB</span>
+                                            <Clock aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-info" />
+                                            <div className="flex flex-col gap-0.5">
+                                                <p className="text-xs font-medium text-muted-foreground">Waktu pelaksanaan</p>
+                                                <p className="font-semibold text-foreground">{eventDate}</p>
+                                                {eventTime && <p className="text-foreground">Pukul {eventTime} WIB</p>}
                                             </div>
                                         </div>
                                     )}
 
                                     {berita.location && (
                                         <div className="flex items-start gap-2.5">
-                                            <MapPin className="h-4 w-4 text-amber-700 dark:text-amber-400 mt-0.5 shrink-0" />
-                                            <div>
-                                                <span className="block font-semibold text-slate-700 dark:text-slate-300">Lokasi / Tempat</span>
-                                                <span className="text-slate-600 dark:text-slate-400">{berita.location}</span>
+                                            <MapPin aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-info" />
+                                            <div className="flex flex-col gap-0.5">
+                                                <p className="text-xs font-medium text-muted-foreground">Lokasi</p>
+                                                <p className="font-semibold text-foreground">{berita.location}</p>
                                             </div>
                                         </div>
                                     )}
                                 </div>
+                            ) : (
+                                <p className="text-sm text-muted-foreground">
+                                    Jadwal dan lokasi agenda akan diumumkan kemudian.
+                                </p>
+                            )}
 
-                                {berita.registration_link && (
-                                    <div className="pt-2">
-                                        <Button asChild size="sm" className="bg-amber-700 hover:bg-amber-800 text-white gap-1.5 font-semibold shadow-xs">
-                                            <a href={berita.registration_link} target="_blank" rel="noopener noreferrer">
-                                                <span>Pendaftaran / Tautan Resmi</span>
-                                                <ExternalLink className="h-3.5 w-3.5" />
-                                            </a>
-                                        </Button>
-                                    </div>
-                                )}
-                            </div>
-                        )}
-
-                        {/* Article Text Content */}
-                        <div className="prose prose-slate dark:prose-invert max-w-none pt-2">
-                            <div className="text-slate-700 dark:text-slate-200 text-base sm:text-lg leading-relaxed sm:leading-8 whitespace-pre-line space-y-4">
-                                {berita.content}
-                            </div>
-                        </div>
-
-                        {/* Share & Actions Toolbar */}
-                        <div className="pt-6 border-t border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-4">
-                            <div className="flex items-center gap-2">
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={handleCopyLink}
-                                    className="gap-2 text-xs font-semibold"
-                                >
-                                    {copied ? (
-                                        <>
-                                            <Check className="h-4 w-4 text-emerald-600" />
-                                            <span>Tautan Berhasil Disalin!</span>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Share2 className="h-4 w-4 text-slate-500" />
-                                            <span>Salin Tautan Artikel</span>
-                                        </>
-                                    )}
+                            {berita.registration_link && (
+                                <Button asChild className="w-full sm:w-fit">
+                                    <a href={berita.registration_link} target="_blank" rel="noopener noreferrer">
+                                        Buka Tautan Pendaftaran
+                                        <ExternalLink aria-hidden="true" />
+                                        <span className="sr-only">(membuka tab baru)</span>
+                                    </a>
                                 </Button>
-                            </div>
-
-                            <Link
-                                href="/"
-                                className="text-xs font-semibold text-emerald-700 hover:text-emerald-800 dark:text-emerald-400 flex items-center gap-1"
-                            >
-                                Lihat Berita Lainnya di Beranda <ArrowRight className="h-3.5 w-3.5" />
-                            </Link>
-                        </div>
-                    </article>
-
-                    {/* Related Articles Section */}
-                    {beritaTerkait && beritaTerkait.length > 0 && (
-                        <section className="mt-16 pt-12 border-t border-slate-200/80 dark:border-slate-800">
-                            <div className="mb-6">
-                                <Badge variant="emerald" className="mb-2">Rekomendasi</Badge>
-                                <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-                                    Kabar & Agenda Lainnya
-                                </h3>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                {beritaTerkait.map((item) => (
-                                    <Card key={item.id} className="flex flex-col justify-between overflow-hidden hover:shadow-md transition-shadow group">
-                                        <Link href={route('berita.show', item.slug)} className="block">
-                                            {item.thumbnail ? (
-                                                <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-100 dark:bg-slate-800">
-                                                    <img
-                                                        src={item.thumbnail}
-                                                        alt={item.title}
-                                                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                                                        loading="lazy"
-                                                    />
-                                                </div>
-                                            ) : (
-                                                <div className="relative aspect-[16/9] w-full bg-emerald-50 dark:bg-emerald-950/30 flex items-center justify-center text-emerald-600/40">
-                                                    <Newspaper className="h-8 w-8" />
-                                                </div>
-                                            )}
-                                        </Link>
-
-                                        <CardHeader className="pb-3">
-                                            <div className="flex items-center justify-between mb-2">
-                                                <Badge variant={categoryBadgeVariant(item.type)} className="text-[10px] uppercase font-bold">
-                                                    {(item.type || 'berita').replace('_', ' ')}
-                                                </Badge>
-                                                <span className="text-[11px] text-slate-400 flex items-center gap-1">
-                                                    <Calendar className="h-3 w-3" />
-                                                    {item.published_at ? new Date(item.published_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}
-                                                </span>
-                                            </div>
-                                            <CardTitle className="text-sm font-bold line-clamp-2 leading-snug">
-                                                <Link href={route('berita.show', item.slug)} className="group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors">
-                                                    {item.title}
-                                                </Link>
-                                            </CardTitle>
-                                        </CardHeader>
-
-                                        <CardFooter className="pt-0 border-t border-slate-100 dark:border-slate-800/80 mt-auto pt-3">
-                                            <Link
-                                                href={route('berita.show', item.slug)}
-                                                className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 flex items-center gap-1 hover:underline"
-                                            >
-                                                Baca Selengkapnya <ArrowRight className="h-3 w-3" />
-                                            </Link>
-                                        </CardFooter>
-                                    </Card>
-                                ))}
-                            </div>
+                            )}
                         </section>
                     )}
-                </div>
-            </main>
 
-            {/* Footer */}
-            <footer className="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 py-8 mt-auto">
-                <div className="container mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
-                    <div className="flex items-center gap-2.5">
-                        <img
-                            src="/images/logo.webp"
-                            alt="Logo Pondok Pesantren RIYADHUL AMIEN"
-                            className="h-6 w-6 object-contain"
-                        />
-                        <span className="font-semibold text-slate-700 dark:text-slate-300">
-                            Tracer Study &bull; Pondok Pesantren RIYADHUL AMIEN
-                        </span>
+                    <div className="max-w-prose whitespace-pre-line text-base leading-7 text-foreground">
+                        {berita.content}
                     </div>
-                    <p>
-                        &copy; {new Date().getFullYear()} Pondok Pesantren RIYADHUL AMIEN. Seluruh hak cipta dilindungi.
-                    </p>
-                </div>
-            </footer>
-        </div>
+
+                    <div className="flex flex-col gap-4 border-t border-border pt-6 sm:flex-row sm:items-center sm:justify-between">
+                        <Button variant="outline" onClick={handleCopyLink} className="w-full sm:w-auto">
+                            {copied ? (
+                                <Check aria-hidden="true" className="text-success" />
+                            ) : (
+                                <Share2 aria-hidden="true" className="text-muted-foreground" />
+                            )}
+                            <span aria-live="polite">{copied ? 'Tautan berhasil disalin' : 'Salin Tautan Artikel'}</span>
+                        </Button>
+
+                        <Button asChild variant="link" className="self-center sm:self-auto">
+                            <Link href="/">Lihat kabar lainnya di Beranda</Link>
+                        </Button>
+                    </div>
+                </article>
+
+                {beritaTerkait.length > 0 && (
+                    <section aria-labelledby="related-heading" className="mx-auto mt-12 max-w-6xl px-4 sm:px-6 md:mt-16 lg:px-8">
+                        <div className="border-t border-border pt-8 md:pt-12">
+                            <h2 id="related-heading" className="text-lg font-semibold text-foreground">
+                                Kabar &amp; Agenda Lainnya
+                            </h2>
+
+                            <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-6 lg:grid-cols-3">
+                                {beritaTerkait.map((item) => (
+                                    <BeritaCard key={item.id} berita={item} />
+                                ))}
+                            </div>
+                        </div>
+                    </section>
+                )}
+            </div>
+        </PublicLayout>
     );
 }

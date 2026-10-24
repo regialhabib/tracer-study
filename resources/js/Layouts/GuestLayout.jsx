@@ -1,38 +1,55 @@
 import { Link } from '@inertiajs/react';
+import { ArrowLeft } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import AppShell from './Partials/AppShell';
 
-export default function GuestLayout({ children }) {
+/**
+ * GuestLayout — kerangka halaman autentikasi (masuk, daftar, lupa sandi, dst.).
+ *
+ * Logo + "Tracer Study Alumni" di atas kartu putih `max-w-md` yang berada di tengah layar,
+ * lalu tautan kembali ke beranda di bawahnya.
+ *
+ * Props:
+ * - `card`     bungkus `children` dengan kartu (default true). Halaman cukup mengisi isi form,
+ *              tanpa `<Card>` sendiri, agar tidak terjadi kartu di dalam kartu.
+ * - `children` isi halaman.
+ */
+export default function GuestLayout({ card = true, children }) {
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col justify-center items-center p-4 sm:p-6 lg:p-8 relative selection:bg-emerald-500 selection:text-white">
-            {/* Subtle background decoration */}
-            <div className="absolute inset-0 bg-[radial-gradient(#059669_1px,transparent_1px)] [background-size:24px_24px] opacity-[0.07] pointer-events-none" />
-            <div className="absolute top-0 right-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
-
-            <div className="relative z-10 w-full max-w-md">
-                <div className="flex flex-col items-center mb-6">
-                    <Link href="/" className="group flex items-center gap-3">
-                        <img
-                            src="/images/logo.webp"
-                            alt="Logo Pondok Pesantren RIYADHUL AMIEN"
-                            className="h-14 w-14 object-contain group-hover:scale-105 transition-all drop-shadow-sm"
-                        />
-                        <div className="text-left">
-                            <span className="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100 block leading-tight">
-                                TRACER STUDY
+        <AppShell>
+            <div className="flex min-h-screen flex-col items-center justify-center bg-background px-4 py-10 text-foreground sm:px-6">
+                <div className="flex w-full max-w-md flex-col gap-6">
+                    <Link
+                        href="/"
+                        className="flex flex-col items-center gap-3 rounded-md text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    >
+                        <img src="/images/logo.webp" alt="" aria-hidden="true" className="size-14 object-contain" />
+                        <span className="flex flex-col gap-0.5">
+                            <span className="text-lg font-bold leading-tight tracking-tight text-foreground">
+                                Tracer Study Alumni
                             </span>
-                            <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 block tracking-wider uppercase">
-                                PP RIYADHUL AMIEN
-                            </span>
-                        </div>
+                            <span className="text-sm font-medium text-muted-foreground">PP Riyadhul Amien</span>
+                        </span>
                     </Link>
+
+                    <div className={cn(card && 'rounded-lg border border-border bg-card p-4 shadow-sm sm:p-6')}>
+                        {children}
+                    </div>
+
+                    <div className="flex flex-col items-center gap-2 text-center">
+                        <Link
+                            href="/"
+                            className="inline-flex items-center gap-1.5 rounded-md text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        >
+                            <ArrowLeft aria-hidden="true" className="size-4" />
+                            Kembali ke Beranda
+                        </Link>
+                        <p className="text-xs text-muted-foreground">
+                            &copy; {new Date().getFullYear()} Pondok Pesantren Riyadhul Amien
+                        </p>
+                    </div>
                 </div>
-
-                {children}
-
-                <p className="mt-8 text-center text-xs text-slate-500 dark:text-slate-400">
-                    &copy; {new Date().getFullYear()} Tracer Study &bull; Pondok Pesantren RIYADHUL AMIEN
-                </p>
             </div>
-        </div>
+        </AppShell>
     );
 }

@@ -1,19 +1,27 @@
 import * as React from "react"
 import { cva } from "class-variance-authority"
+import { AlertTriangle, CheckCircle2, Info, XCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
 
+const successClasses = "border-success/25 bg-success-soft text-foreground [&>svg]:text-success"
+const warningClasses = "border-warning/25 bg-warning-soft text-foreground [&>svg]:text-warning"
+const dangerClasses = "border-danger/25 bg-danger-soft text-foreground [&>svg]:text-danger"
+const infoClasses = "border-info/25 bg-info-soft text-foreground [&>svg]:text-info"
+
 const alertVariants = cva(
-  "relative w-full rounded-lg border px-4 py-3 text-sm [&>svg+div]:translate-y-[-3px] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 [&>svg]:text-foreground [&>svg~*]:pl-7",
+  "relative w-full rounded-lg border px-4 py-3 text-sm [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-3.5 [&>svg]:size-4 [&>svg]:text-foreground [&>svg~*]:pl-7",
   {
     variants: {
       variant: {
-        default: "bg-background text-foreground border-slate-200 dark:border-slate-800",
-        destructive:
-          "border-red-200 bg-red-50 text-red-900 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-200 [&>svg]:text-red-600",
-        emerald:
-          "border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-200 [&>svg]:text-emerald-600",
-        amber:
-          "border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200 [&>svg]:text-amber-600",
+        default: "border-border bg-card text-foreground",
+        info: infoClasses,
+        success: successClasses,
+        warning: warningClasses,
+        danger: dangerClasses,
+        /* Alias lama — dipertahankan agar halaman lama tidak rusak. */
+        destructive: dangerClasses,
+        emerald: successClasses,
+        amber: warningClasses,
       },
     },
     defaultVariants: {
@@ -22,20 +30,43 @@ const alertVariants = cva(
   }
 )
 
-const Alert = React.forwardRef(({ className, variant, ...props }, ref) => (
-  <div
-    ref={ref}
-    role="alert"
-    className={cn(alertVariants({ variant }), className)}
-    {...props}
-  />
-))
+const defaultIcons = {
+  info: Info,
+  success: CheckCircle2,
+  warning: AlertTriangle,
+  danger: XCircle,
+}
+
+/**
+ * Alert — kotak pemberitahuan dalam halaman.
+ *
+ * Props:
+ * - `variant` default | info | success | warning | danger
+ * - `icon`    komponen ikon Lucide pengganti, atau `false` untuk tanpa ikon. Varian
+ *             info/success/warning/danger otomatis memakai ikon bawaan. Ikon juga bisa
+ *             diberikan sebagai anak pertama (`<Alert><Info /> ...</Alert>`).
+ */
+const Alert = React.forwardRef(({ className, variant, icon, children, ...props }, ref) => {
+  const Icon = icon === false ? null : (icon ?? defaultIcons[variant] ?? null)
+
+  return (
+    <div
+      ref={ref}
+      role={variant === "danger" || variant === "destructive" ? "alert" : "status"}
+      className={cn(alertVariants({ variant }), className)}
+      {...props}
+    >
+      {Icon && <Icon aria-hidden="true" />}
+      {children}
+    </div>
+  )
+})
 Alert.displayName = "Alert"
 
 const AlertTitle = React.forwardRef(({ className, ...props }, ref) => (
   <h5
     ref={ref}
-    className={cn("mb-1 font-semibold leading-none tracking-tight", className)}
+    className={cn("mb-1 font-semibold leading-snug", className)}
     {...props}
   />
 ))
@@ -44,10 +75,10 @@ AlertTitle.displayName = "AlertTitle"
 const AlertDescription = React.forwardRef(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("text-sm [&_p]:leading-relaxed", className)}
+    className={cn("text-sm text-foreground/80 [&_p]:leading-relaxed", className)}
     {...props}
   />
 ))
 AlertDescription.displayName = "AlertDescription"
 
-export { Alert, AlertTitle, AlertDescription }
+export { Alert, AlertTitle, AlertDescription, alertVariants }

@@ -1,4 +1,4 @@
-import PrimaryButton from '@/Components/PrimaryButton';
+import { Alert, AlertDescription, Button } from '@/Components/ui';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 
@@ -13,38 +13,42 @@ export default function VerifyEmail({ status }) {
 
     return (
         <GuestLayout>
-            <Head title="Email Verification" />
+            <Head title="Verifikasi Email" />
 
-            <div className="mb-4 text-sm text-gray-600">
-                Thanks for signing up! Before getting started, could you verify
-                your email address by clicking on the link we just emailed to
-                you? If you didn't receive the email, we will gladly send you
-                another.
+            <div className="flex flex-col gap-6">
+                <header className="flex flex-col gap-1 text-center">
+                    <h1 className="text-[22px] font-bold tracking-tight text-foreground md:text-2xl">
+                        Verifikasi Email Anda
+                    </h1>
+                    <p className="text-sm text-muted-foreground">
+                        Terima kasih telah mendaftar. Sebelum melanjutkan, mohon buka tautan verifikasi yang
+                        kami kirimkan ke email Anda. Belum menerima email? Kami dengan senang hati
+                        mengirimkannya kembali.
+                    </p>
+                </header>
+
+                {status === 'verification-link-sent' && (
+                    <Alert variant="success">
+                        <AlertDescription>
+                            Tautan verifikasi baru telah dikirim ke email yang Anda gunakan saat mendaftar.
+                        </AlertDescription>
+                    </Alert>
+                )}
+
+                <div className="flex flex-col gap-3">
+                    <form onSubmit={submit}>
+                        <Button type="submit" size="lg" className="w-full" loading={processing} loadingText="Mengirim…">
+                            Kirim Ulang Email Verifikasi
+                        </Button>
+                    </form>
+
+                    <Button asChild variant="ghost" size="lg" className="w-full">
+                        <Link href={route('logout')} method="post" as="button" type="button">
+                            Keluar
+                        </Link>
+                    </Button>
+                </div>
             </div>
-
-            {status === 'verification-link-sent' && (
-                <div className="mb-4 text-sm font-medium text-green-600">
-                    A new verification link has been sent to the email address
-                    you provided during registration.
-                </div>
-            )}
-
-            <form onSubmit={submit}>
-                <div className="mt-4 flex items-center justify-between">
-                    <PrimaryButton disabled={processing}>
-                        Resend Verification Email
-                    </PrimaryButton>
-
-                    <Link
-                        href={route('logout')}
-                        method="post"
-                        as="button"
-                        className="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                    >
-                        Log Out
-                    </Link>
-                </div>
-            </form>
         </GuestLayout>
     );
 }

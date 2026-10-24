@@ -1,9 +1,19 @@
-import DangerButton from '@/Components/DangerButton';
-import InputError from '@/Components/InputError';
-import InputLabel from '@/Components/InputLabel';
-import Modal from '@/Components/Modal';
-import SecondaryButton from '@/Components/SecondaryButton';
-import TextInput from '@/Components/TextInput';
+import {
+    Button,
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    Dialog,
+    DialogBody,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    FieldError,
+    Input,
+    Label,
+} from '@/Components/ui';
 import { useForm } from '@inertiajs/react';
 import { useRef, useState } from 'react';
 
@@ -46,45 +56,49 @@ export default function DeleteUserForm({ className = '' }) {
     };
 
     return (
-        <section className={`space-y-6 ${className}`}>
-            <header>
-                <h2 className="text-lg font-medium text-gray-900">
-                    Delete Account
-                </h2>
-
-                <p className="mt-1 text-sm text-gray-600">
-                    Once your account is deleted, all of its resources and data
-                    will be permanently deleted. Before deleting your account,
-                    please download any data or information that you wish to
-                    retain.
-                </p>
-            </header>
-
-            <DangerButton onClick={confirmUserDeletion}>
-                Delete Account
-            </DangerButton>
-
-            <Modal show={confirmingUserDeletion} onClose={closeModal}>
-                <form onSubmit={deleteUser} className="p-6">
-                    <h2 className="text-lg font-medium text-gray-900">
-                        Are you sure you want to delete your account?
+        <section aria-labelledby="delete-account-title" className={className}>
+            <Card>
+                <CardHeader>
+                    <h2
+                        id="delete-account-title"
+                        className="text-lg font-semibold leading-snug tracking-tight text-foreground"
+                    >
+                        Hapus Akun
                     </h2>
+                    <CardDescription>
+                        Setelah akun dihapus, seluruh data dan jawaban Anda akan terhapus
+                        permanen. Simpan terlebih dahulu informasi yang ingin Anda pertahankan.
+                    </CardDescription>
+                </CardHeader>
 
-                    <p className="mt-1 text-sm text-gray-600">
-                        Once your account is deleted, all of its resources and
-                        data will be permanently deleted. Please enter your
-                        password to confirm you would like to permanently delete
-                        your account.
-                    </p>
+                <CardContent>
+                    <Button
+                        type="button"
+                        variant="destructive"
+                        onClick={confirmUserDeletion}
+                        className="w-full sm:w-auto"
+                    >
+                        Hapus Akun
+                    </Button>
+                </CardContent>
+            </Card>
 
-                    <div className="mt-6">
-                        <InputLabel
-                            htmlFor="password"
-                            value="Password"
-                            className="sr-only"
-                        />
+            <Dialog open={confirmingUserDeletion} onClose={closeModal}>
+                <form onSubmit={deleteUser}>
+                    <DialogHeader>
+                        <DialogTitle>Yakin ingin menghapus akun Anda?</DialogTitle>
+                        <DialogDescription>
+                            Seluruh data akun Anda akan terhapus permanen. Masukkan kata
+                            sandi untuk mengonfirmasi penghapusan akun.
+                        </DialogDescription>
+                    </DialogHeader>
 
-                        <TextInput
+                    <DialogBody className="space-y-1.5">
+                        <Label htmlFor="password" className="sr-only">
+                            Kata sandi
+                        </Label>
+
+                        <Input
                             id="password"
                             type="password"
                             name="password"
@@ -93,28 +107,31 @@ export default function DeleteUserForm({ className = '' }) {
                             onChange={(e) =>
                                 setData('password', e.target.value)
                             }
-                            className="mt-1 block w-3/4"
-                            isFocused
-                            placeholder="Password"
+                            data-autofocus
+                            placeholder="Kata sandi"
+                            invalid={Boolean(errors.password)}
+                            aria-describedby={errors.password ? 'delete-password-error' : undefined}
                         />
 
-                        <InputError
-                            message={errors.password}
-                            className="mt-2"
-                        />
-                    </div>
+                        <FieldError id="delete-password-error" message={errors.password} />
+                    </DialogBody>
 
-                    <div className="mt-6 flex justify-end">
-                        <SecondaryButton onClick={closeModal}>
-                            Cancel
-                        </SecondaryButton>
+                    <DialogFooter>
+                        <Button type="button" variant="outline" onClick={closeModal}>
+                            Batal
+                        </Button>
 
-                        <DangerButton className="ms-3" disabled={processing}>
-                            Delete Account
-                        </DangerButton>
-                    </div>
+                        <Button
+                            type="submit"
+                            variant="destructive"
+                            loading={processing}
+                            loadingText="Menghapus…"
+                        >
+                            Hapus Akun
+                        </Button>
+                    </DialogFooter>
                 </form>
-            </Modal>
+            </Dialog>
         </section>
     );
 }
