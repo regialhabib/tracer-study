@@ -24,3 +24,5 @@ require __DIR__.'/admin/verifikasi.php';
 require __DIR__.'/admin/pengguna.php';
 require __DIR__.'/admin/alumni.php';
 require __DIR__.'/admin/kuesioner.php';
+require __DIR__.'/admin/analitik-ekspor.php';
+require __DIR__.'/admin/analitik.php';

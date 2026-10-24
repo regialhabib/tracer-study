@@ -12,6 +12,7 @@ use App\Models\Kuesioner;
 use App\Models\Pertanyaan;
 use App\Models\ResponKuesioner;
 use App\Models\User;
+use App\Services\Admin\Analitik\AnalitikService;
 use App\Services\Kuesioner\AnswerCodec;
 use App\Services\Kuesioner\KuesionerAvailabilityService;
 use App\Services\Kuesioner\KuesionerPresenter;
@@ -38,6 +39,7 @@ class PengisianKuesionerService
         private KuesionerPresenter $presenter,
         private VisibilityResolver $visibilityResolver,
         private AnswerCodec $codec,
+        private AnalitikService $analitik,
     ) {}
 
     /**
@@ -218,6 +220,10 @@ class PengisianKuesionerService
             $respon->touch();
         });
 
+        if ($respon->isSubmitted()) {
+            $this->analitik->flushCache($kuesioner->id);
+        }
+
         return $respon->refresh();
     }
 
@@ -267,6 +273,8 @@ class PengisianKuesionerService
 
             $this->syncCurrentStatus($respon, $kuesioner);
         });
+
+        $this->analitik->flushCache($kuesioner->id);
 
         return [];
     }
