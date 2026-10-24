@@ -36,6 +36,7 @@ Route::middleware(['auth', 'active', 'not_first_login'])->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::post('/profile/avatar', [ProfileController::class, 'updateAvatar'])->name('profile.avatar.update');
     Route::delete('/profile/avatar', [ProfileController::class, 'destroyAvatar'])->name('profile.avatar.destroy');
+    Route::patch('/profile/pesan', [ProfileController::class, 'updatePesan'])->name('profile.pesan.update');
 });
 
 // Notifikasi dalam aplikasi — admin & alumni
@@ -43,6 +44,12 @@ Route::middleware(['auth', 'active', 'not_first_login'])
     ->prefix('notifikasi')
     ->name('notifikasi.')
     ->group(base_path('routes/notifikasi.php'));
+
+// Pesan pribadi — admin & alumni
+Route::middleware(['auth', 'active', 'not_first_login'])
+    ->prefix('pesan')
+    ->name('pesan.')
+    ->group(base_path('routes/pesan.php'));
 
 // Pengisian kuesioner — khusus alumni
 Route::middleware(['auth', 'active', 'not_first_login', 'role:alumni'])

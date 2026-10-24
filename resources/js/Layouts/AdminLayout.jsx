@@ -16,6 +16,7 @@ import {
 import { useEffect, useState } from 'react';
 import { Button, DropdownMenuItem, DropdownMenuSeparator, Sheet, SheetBody, SheetHeader, SheetTitle } from '@/Components/ui';
 import NotificationBell from '@/Components/notifikasi/NotificationBell';
+import usePesanUnread from '@/lib/pesan/usePesanUnread';
 import { cn } from '@/lib/utils';
 import AppShell from './Partials/AppShell';
 import BrandLogo from './Partials/BrandLogo';
@@ -57,7 +58,7 @@ const adminNavigationGroups = [
         label: 'Komunikasi',
         items: [
             { label: 'Berita', icon: Newspaper, routeName: 'admin.berita.index', activePattern: 'admin.berita.*' },
-            { label: 'Pesan', icon: MessageSquare, routeName: 'pesan.index', activePattern: 'pesan.*' },
+            { label: 'Pesan', icon: MessageSquare, routeName: 'pesan.index', activePattern: 'pesan.*', badgeKey: 'pesan' },
         ],
     },
     {
@@ -105,7 +106,7 @@ function SidebarNavItem({ item }) {
             {item.badge > 0 && (
                 <span className="min-w-6 rounded-full bg-warning-soft px-2 py-0.5 text-center text-xs font-semibold tabular-nums text-warning">
                     {item.badge.toLocaleString('id-ID')}
-                    <span className="sr-only"> menunggu</span>
+                    <span className="sr-only"> {item.badgeKey === 'pesan' ? 'belum dibaca' : 'menunggu'}</span>
                 </span>
             )}
         </Link>
@@ -134,12 +135,14 @@ export default function AdminLayout({ title, header, children }) {
     const headerNode = typeof header === 'string' ? null : header;
 
     const adminBadges = usePage().props.adminBadges ?? {};
+    const pesanUnread = usePesanUnread();
 
     const navigationGroups = adminNavigationGroups.map((group) => ({
         ...group,
         items: group.items.map((item) => ({
             ...resolveNavItem(item),
-            badge: item.badgeKey ? adminBadges[item.badgeKey] : undefined,
+            badge: item.badgeKey === 'pesan' ? pesanUnread ?? 0 : item.badgeKey ? adminBadges[item.badgeKey] : undefined,
+            badgeKey: item.badgeKey,
         })),
     }));
 

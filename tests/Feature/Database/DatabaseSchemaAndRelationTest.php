@@ -125,10 +125,7 @@ class DatabaseSchemaAndRelationTest extends TestCase
         $alumni = User::factory()->alumni()->create();
         $admin = User::factory()->admin()->create();
 
-        $conversation = Conversation::factory()->create([
-            'alumni_id' => $alumni->id,
-            'admin_id' => $admin->id,
-        ]);
+        $conversation = Conversation::factory()->between($admin, $alumni)->create();
 
         $message1 = Message::factory()->create([
             'conversation_id' => $conversation->id,
@@ -147,8 +144,10 @@ class DatabaseSchemaAndRelationTest extends TestCase
         ]);
 
         $this->assertCount(2, $conversation->messages);
-        $this->assertEquals($alumni->id, $conversation->alumni->id);
-        $this->assertEquals($admin->id, $conversation->admin->id);
+        $this->assertSame($alumni->id, $conversation->user_one_id);
+        $this->assertSame($admin->id, $conversation->user_two_id);
+        $this->assertTrue($conversation->otherParticipant($alumni)->is($admin));
+        $this->assertTrue($alumni->conversations()->whereKey($conversation->id)->exists());
         $this->assertEquals(1, Message::unread()->count());
 
         // Test cascade deletion: menghapus conversation harus menghapus seluruh messages
@@ -174,7 +173,7 @@ class DatabaseSchemaAndRelationTest extends TestCase
         $this->assertDatabaseHas('respon_kuesioner', ['status' => 'submitted']);
         $this->assertDatabaseHas('respon_kuesioner', ['status' => 'draft']);
         $this->assertDatabaseHas('jawaban_kuesioner', ['answer' => 'pengabdian']);
-        $this->assertDatabaseCount('conversations', 1);
-        $this->assertDatabaseCount('messages', 3);
+        $this->assertDatabaseCount('conversations', 2);
+        $this->assertDatabaseCount('messages', 4);
     }
 }

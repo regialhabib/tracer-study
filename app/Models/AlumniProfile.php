@@ -29,6 +29,7 @@ use Illuminate\Support\Facades\Storage;
     'province',
     'address',
     'avatar_url',
+    'allow_alumni_messages',
 ])]
 class AlumniProfile extends Model
 {
@@ -52,6 +53,7 @@ class AlumniProfile extends Model
             'entry_year' => 'integer',
             'graduation_year' => 'integer',
             'tahfidz_count' => 'integer',
+            'allow_alumni_messages' => 'boolean',
         ];
     }
 

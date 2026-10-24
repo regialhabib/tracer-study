@@ -21,9 +21,11 @@ class ConversationSeeder extends Seeder
             return;
         }
 
+        [$userOneId, $userTwoId] = Conversation::orderedPair($alumni, $admin);
+
         $conversation = Conversation::create([
-            'alumni_id' => $alumni->id,
-            'admin_id' => $admin->id,
+            'user_one_id' => $userOneId,
+            'user_two_id' => $userTwoId,
             'last_message_at' => now(),
         ]);
 
@@ -55,6 +57,30 @@ class ConversationSeeder extends Seeder
             'is_read' => false,
             'read_at' => null,
             'created_at' => now()->subMinutes(2),
+        ]);
+
+        $rizqi = User::where('email', 'rizqi@alumni.test')->first();
+
+        if (! $rizqi) {
+            return;
+        }
+
+        [$firstId, $secondId] = Conversation::orderedPair($alumni, $rizqi);
+
+        $alumniChat = Conversation::create([
+            'user_one_id' => $firstId,
+            'user_two_id' => $secondId,
+            'last_message_at' => now()->subHour(),
+        ]);
+
+        Message::create([
+            'conversation_id' => $alumniChat->id,
+            'sender_id' => $rizqi->id,
+            'message' => 'Akhi Fauzi, kapan ada kumpul alumni angkatan kita di Kediri?',
+            'attachment_path' => null,
+            'is_read' => false,
+            'read_at' => null,
+            'created_at' => now()->subHour(),
         ]);
     }
 }

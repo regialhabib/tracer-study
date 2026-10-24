@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Message;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -43,7 +44,22 @@ class HandleInertiaRequests extends Middleware
             'notifikasi' => fn (): ?array => $request->user()
                 ? ['unread' => $request->user()->unreadNotifications()->count()]
                 : null,
+            'pesan' => fn (): ?array => $request->user()
+                ? ['unread' => $this->unreadMessages($request->user())]
+                : null,
         ];
+    }
+
+    /**
+     * Jumlah pesan pribadi belum dibaca yang dikirim lawan bicara.
+     */
+    private function unreadMessages(User $user): int
+    {
+        return Message::query()
+            ->unread()
+            ->where('sender_id', '!=', $user->id)
+            ->whereIn('conversation_id', $user->conversations()->select('id'))
+            ->count();
     }
 
     /**

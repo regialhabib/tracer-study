@@ -6,10 +6,11 @@ import AlumniAvatarCard from './Partials/AlumniAvatarCard';
 import AlumniProfileForm from './Partials/AlumniProfileForm';
 import DeleteUserForm from './Partials/DeleteUserForm';
 import OfficialDataCard from './Partials/OfficialDataCard';
+import PengaturanPesanForm from './Partials/PengaturanPesanForm';
 import UpdatePasswordForm from './Partials/UpdatePasswordForm';
 import UpdateProfileInformationForm from './Partials/UpdateProfileInformationForm';
 
-export default function Edit({ mustVerifyEmail, status, alumni = null }) {
+export default function Edit({ mustVerifyEmail, status, alumni = null, pesanSettings = null, blockedUsers = [] }) {
     const user = usePage().props.auth.user;
     const isAdmin = user?.role === 'admin';
     const Layout = isAdmin ? AdminLayout : AlumniLayout;
@@ -38,6 +39,8 @@ export default function Edit({ mustVerifyEmail, status, alumni = null }) {
                 ) : (
                     <UpdateProfileInformationForm mustVerifyEmail={mustVerifyEmail} status={status} />
                 )}
+
+                <PengaturanPesanForm pesanSettings={pesanSettings} blockedUsers={blockedUsers} />
 
                 <UpdatePasswordForm />
 

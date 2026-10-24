@@ -3,8 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\AvatarUpdateRequest;
+use App\Http\Requests\Pesan\PengaturanPesanRequest;
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Http\Resources\KontakResource;
 use App\Services\Alumni\ProfilService;
+use App\Services\Pesan\KontakService;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -15,7 +18,9 @@ use Inertia\Response;
 
 class ProfileController extends Controller
 {
-    public function __construct(private readonly ProfilService $profilService) {}
+    public function __construct(private readonly ProfilService $profilService,
+        private readonly KontakService $kontakService,
+    ) {}
 
     /**
      * Display the user's profile form.
@@ -28,6 +33,10 @@ class ProfileController extends Controller
         return Inertia::render('Profile/Edit', [
             'mustVerifyEmail' => $user instanceof MustVerifyEmail,
             'status' => session('status'),
+            'pesanSettings' => $profile === null ? null : [
+                'allow_alumni_messages' => (bool) $profile->allow_alumni_messages,
+            ],
+            'blockedUsers' => KontakResource::collection($this->kontakService->blockedBy($user))->resolve(),
             'alumni' => $profile === null ? null : [
                 'nisn' => $user->nisn,
                 'name' => $user->name,
@@ -56,6 +65,13 @@ class ProfileController extends Controller
         $this->profilService->update($request->user(), $request->validated());
 
         return Redirect::route('profile.edit');
+    }
+
+    public function updatePesan(PengaturanPesanRequest $request): RedirectResponse
+    {
+        $this->kontakService->setAllowAlumniMessages($request->user(), $request->boolean('allow_alumni_messages'));
+
+        return Redirect::route('profile.edit')->with('status', 'Pengaturan pesan berhasil disimpan.');
     }
 
     public function updateAvatar(AvatarUpdateRequest $request): RedirectResponse

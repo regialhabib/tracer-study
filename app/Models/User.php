@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -86,19 +87,36 @@ class User extends Authenticatable
     }
 
     /**
-     * Ruang percakapan di mana pengguna bertindak sebagai alumni.
+     * Percakapan pribadi yang diikuti pengguna (sebagai peserta mana pun).
+     *
+     * @return Builder<Conversation>
      */
-    public function conversationsAsAlumni(): HasMany
+    public function conversations(): Builder
     {
-        return $this->hasMany(Conversation::class, 'alumni_id');
+        return Conversation::query()->forUser($this);
     }
 
     /**
-     * Ruang percakapan di mana pengguna bertindak sebagai admin/ustadz.
+     * Pengguna yang diblokir oleh pengguna ini (PRD MSG-08).
      */
-    public function conversationsAsAdmin(): HasMany
+    public function blockedUsers(): BelongsToMany
     {
-        return $this->hasMany(Conversation::class, 'admin_id');
+        return $this->belongsToMany(User::class, 'blocked_users', 'blocker_id', 'blocked_id')->withTimestamps();
+    }
+
+    /**
+     * Pengguna yang memblokir pengguna ini.
+     */
+    public function blockedBy(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'blocked_users', 'blocked_id', 'blocker_id')->withTimestamps();
+    }
+
+    public function hasBlocked(User|int $user): bool
+    {
+        $userId = $user instanceof User ? $user->id : $user;
+
+        return $this->blockedUsers()->whereKey($userId)->exists();
     }
 
     /**

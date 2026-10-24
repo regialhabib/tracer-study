@@ -19,9 +19,22 @@ class ConversationFactory extends Factory
     public function definition(): array
     {
         return [
-            'alumni_id' => User::factory()->alumni(),
-            'admin_id' => User::factory()->admin(),
+            'user_one_id' => User::factory()->alumni(),
+            'user_two_id' => User::factory()->admin(),
             'last_message_at' => now(),
         ];
+    }
+
+    /**
+     * Percakapan antara dua pengguna tertentu (disimpan sebagai pasangan id terurut).
+     */
+    public function between(User $first, User $second): static
+    {
+        [$userOneId, $userTwoId] = Conversation::orderedPair($first, $second);
+
+        return $this->state(fn (array $attributes) => [
+            'user_one_id' => $userOneId,
+            'user_two_id' => $userTwoId,
+        ]);
     }
 }

@@ -2,6 +2,7 @@ import { Link, usePage } from '@inertiajs/react';
 import { ClipboardList, House, LogOut, MessageCircle, Newspaper, Shield, UserRound } from 'lucide-react';
 import { DropdownMenuItem, DropdownMenuSeparator } from '@/Components/ui';
 import NotificationBell from '@/Components/notifikasi/NotificationBell';
+import usePesanUnread from '@/lib/pesan/usePesanUnread';
 import { cn } from '@/lib/utils';
 import AppShell from './Partials/AppShell';
 import BrandLogo from './Partials/BrandLogo';
@@ -22,7 +23,7 @@ const alumniNavigation = [
     { label: 'Beranda', icon: House, routeName: 'dashboard' },
     { label: 'Kuesioner', icon: ClipboardList, routeName: 'alumni.kuesioner.index', activePattern: 'alumni.kuesioner.*' },
     { label: 'Kabar', icon: Newspaper, routeName: 'berita.index', activePattern: 'berita.*' },
-    { label: 'Pesan', icon: MessageCircle, routeName: 'pesan.index', activePattern: 'pesan.*' },
+    { label: 'Pesan', icon: MessageCircle, routeName: 'pesan.index', activePattern: 'pesan.*', badgeKey: 'pesan' },
     { label: 'Profil', icon: UserRound, routeName: 'profile.edit', activePattern: 'profile.*' },
 ];
 
@@ -58,6 +59,12 @@ function DesktopNavItem({ item }) {
         >
             <Icon aria-hidden="true" className="size-4" />
             {item.label}
+            {item.badge > 0 && (
+                <span className="min-w-5 rounded-full bg-danger px-1.5 text-center text-[11px] font-bold leading-5 tabular-nums text-primary-foreground">
+                    {item.badge > 99 ? '99+' : item.badge}
+                    <span className="sr-only"> belum dibaca</span>
+                </span>
+            )}
         </Link>
     );
 }
@@ -92,20 +99,33 @@ function BottomNavItem({ item }) {
         >
             <span
                 className={cn(
-                    'flex h-7 w-12 items-center justify-center rounded-full transition-colors',
+                    'relative flex h-7 w-12 items-center justify-center rounded-full transition-colors',
                     item.isActive && 'bg-primary-soft',
                 )}
             >
                 <Icon aria-hidden="true" className="size-5" />
+                {item.badge > 0 && (
+                    <span
+                        aria-hidden="true"
+                        className="absolute right-1 top-0 min-w-[18px] rounded-full bg-danger px-1 text-center text-[11px] font-bold leading-[18px] tabular-nums text-primary-foreground"
+                    >
+                        {item.badge > 99 ? '99+' : item.badge}
+                    </span>
+                )}
             </span>
             {item.label}
+            {item.badge > 0 && <span className="sr-only">, {item.badge} belum dibaca</span>}
         </Link>
     );
 }
 
 export default function AlumniLayout({ header, children }) {
     const user = usePage().props.auth?.user;
-    const navigation = alumniNavigation.map(resolveNavItem);
+    const pesanUnread = usePesanUnread();
+    const navigation = alumniNavigation.map((item) => ({
+        ...resolveNavItem(item),
+        badge: item.badgeKey === 'pesan' ? pesanUnread ?? 0 : undefined,
+    }));
 
     return (
         <AppShell>
