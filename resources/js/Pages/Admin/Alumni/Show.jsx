@@ -1,5 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
-import { ArrowLeft, ClipboardList, KeyRound } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, ClipboardList, KeyRound, PencilLine } from 'lucide-react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import {
     Alert,
@@ -8,6 +8,7 @@ import {
     Avatar,
     AvatarFallback,
     AvatarImage,
+    Badge,
     Button,
     Card,
     CardContent,
@@ -20,6 +21,7 @@ import WhatsAppLink from '@/Components/WhatsAppLink';
 import AlumniActions from '@/Components/admin/alumni/AlumniActions';
 import { AccountStatusBadge, ActivityStatusBadge } from '@/Components/admin/alumni/AlumniBadges';
 import { GENDER_LABELS, labelFor } from '@/lib/labels';
+import { RESPON_STATUS_LABELS } from '@/lib/kuesioner';
 import { initialsFromName } from '@/Layouts/Partials/navigation';
 
 const dateFormatter = new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
@@ -157,11 +159,36 @@ export default function Show({ alumni, passwordInfo, resetWhatsappUrl }) {
                         <CardTitle>Riwayat Kuesioner</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <EmptyState
-                            icon={ClipboardList}
-                            title="Belum tersedia"
-                            description="Tersedia setelah modul kuesioner aktif."
-                        />
+                        {alumni.riwayat_kuesioner.length > 0 ? (
+                            <ul className="divide-y divide-border">
+                                {alumni.riwayat_kuesioner.map((respon) => (
+                                    <li key={respon.id} className="flex flex-col gap-1.5 py-3 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+                                        <div className="min-w-0 space-y-1">
+                                            <p className="break-words text-sm font-semibold text-foreground">{respon.title}</p>
+                                            <p className="text-xs text-muted-foreground">
+                                                {respon.status === 'submitted'
+                                                    ? `Dikirim ${formatDate(respon.submitted_at)}`
+                                                    : 'Belum dikirim'}
+                                                {' · '}Terakhir diubah {formatDate(respon.updated_at)}
+                                            </p>
+                                        </div>
+                                        <Badge
+                                            variant={respon.status === 'submitted' ? 'success' : 'warning'}
+                                            icon={respon.status === 'submitted' ? CheckCircle2 : PencilLine}
+                                            className="self-start"
+                                        >
+                                            {RESPON_STATUS_LABELS[respon.status]}
+                                        </Badge>
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <EmptyState
+                                icon={ClipboardList}
+                                title="Belum ada respon"
+                                description="Alumni ini belum membuka atau mengisi kuesioner."
+                            />
+                        )}
                     </CardContent>
                 </Card>
             </div>

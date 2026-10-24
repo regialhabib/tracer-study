@@ -2,6 +2,8 @@
 
 namespace Tests\Feature\Database;
 
+use App\Enums\KuesionerStatus;
+use App\Enums\QuestionType;
 use App\Models\AlumniProfile;
 use App\Models\Berita;
 use App\Models\Conversation;
@@ -9,6 +11,7 @@ use App\Models\JawabanKuesioner;
 use App\Models\Kuesioner;
 use App\Models\Message;
 use App\Models\Pertanyaan;
+use App\Models\ResponKuesioner;
 use App\Models\User;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -79,7 +82,7 @@ class DatabaseSchemaAndRelationTest extends TestCase
         $kuesioner = Kuesioner::factory()->create([
             'title' => 'Tracer Study 2024',
             'target_graduation_years' => [2023, 2024],
-            'is_active' => true,
+            'status' => KuesionerStatus::Active,
         ]);
 
         $this->assertIsArray($kuesioner->target_graduation_years);
@@ -89,25 +92,30 @@ class DatabaseSchemaAndRelationTest extends TestCase
             'kuesioner_id' => $kuesioner->id,
             'question_text' => 'Aktivitas utama santri saat ini?',
             'question_type' => 'radio',
-            'options' => ['Pengabdian', 'Kuliah', 'Bekerja'],
-            'metric_key' => 'status_alumni',
+            'options' => [
+                ['value' => 'pengabdian', 'label' => 'Pengabdian'],
+                ['value' => 'kuliah_umum', 'label' => 'Kuliah'],
+            ],
+            'metric_key' => 'status_kegiatan',
             'order' => 1,
         ]);
 
         $this->assertIsArray($pertanyaan->options);
-        $this->assertEquals('Pengabdian', $pertanyaan->options[0]);
+        $this->assertEquals('Pengabdian', $pertanyaan->options[0]['label']);
+        $this->assertSame(QuestionType::Radio, $pertanyaan->question_type);
 
-        $jawaban = JawabanKuesioner::factory()->create([
-            'kuesioner_id' => $kuesioner->id,
-            'user_id' => $alumni->id,
+        $respon = ResponKuesioner::factory()->create(['kuesioner_id' => $kuesioner->id, 'user_id' => $alumni->id]);
+        $jawaban = JawabanKuesioner::factory()->forRespon($respon)->create([
             'pertanyaan_id' => $pertanyaan->id,
-            'answer' => 'Pengabdian',
+            'answer' => 'pengabdian',
         ]);
 
         $this->assertEquals($kuesioner->id, $jawaban->kuesioner->id);
         $this->assertEquals($alumni->id, $jawaban->user->id);
         $this->assertEquals($pertanyaan->id, $jawaban->pertanyaan->id);
-        $this->assertEquals('Pengabdian', $jawaban->answer);
+        $this->assertEquals('pengabdian', $jawaban->answer);
+        $this->assertEquals($respon->id, $jawaban->respon->id);
+        $this->assertCount(1, $respon->jawaban);
         $this->assertCount(1, $kuesioner->pertanyaan);
         $this->assertCount(1, $pertanyaan->jawaban);
     }
@@ -157,9 +165,15 @@ class DatabaseSchemaAndRelationTest extends TestCase
         $this->assertDatabaseHas('users', ['email' => 'fauzi@alumni.test', 'role' => 'alumni']);
         $this->assertDatabaseHas('alumni_profiles', ['major' => 'Keagamaan (PK)', 'current_status' => 'pengabdian']);
         $this->assertDatabaseHas('berita', ['type' => 'berita', 'status' => 'published']);
-        $this->assertDatabaseHas('kuesioner', ['is_active' => true]);
-        $this->assertDatabaseHas('pertanyaan', ['metric_key' => 'status_kegiatan']);
-        $this->assertDatabaseHas('jawaban_kuesioner', ['answer' => 'Pengabdian / Khidmah di Pondok']);
+        $this->assertDatabaseCount('kuesioner', 2);
+        $this->assertDatabaseHas('kuesioner', ['status' => 'active']);
+        $this->assertDatabaseHas('kuesioner', ['status' => 'closed']);
+        $this->assertDatabaseHas('pertanyaan', ['metric_key' => 'status_kegiatan', 'question_type' => 'radio']);
+        $this->assertDatabaseHas('pertanyaan', ['metric_key' => 'kebutuhan_keterampilan', 'question_type' => 'checkbox']);
+        $this->assertGreaterThanOrEqual(19, Pertanyaan::where('kuesioner_id', Kuesioner::where('status', 'active')->value('id'))->count());
+        $this->assertDatabaseHas('respon_kuesioner', ['status' => 'submitted']);
+        $this->assertDatabaseHas('respon_kuesioner', ['status' => 'draft']);
+        $this->assertDatabaseHas('jawaban_kuesioner', ['answer' => 'pengabdian']);
         $this->assertDatabaseCount('conversations', 1);
         $this->assertDatabaseCount('messages', 3);
     }

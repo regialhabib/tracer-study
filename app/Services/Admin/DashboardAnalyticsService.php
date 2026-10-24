@@ -2,11 +2,12 @@
 
 namespace App\Services\Admin;
 
+use App\Enums\ResponStatus;
 use App\Models\AlumniProfile;
 use App\Models\Berita;
 use App\Models\Conversation;
-use App\Models\JawabanKuesioner;
 use App\Models\Kuesioner;
+use App\Models\ResponKuesioner;
 use App\Models\User;
 
 class DashboardAnalyticsService
@@ -19,11 +20,11 @@ class DashboardAnalyticsService
     public function getDashboardMetrics(): array
     {
         $totalAlumni = User::where('role', 'alumni')->count();
-        $totalResponses = JawabanKuesioner::distinct('user_id')->count('user_id');
+        $totalResponses = ResponKuesioner::where('status', ResponStatus::Submitted->value)->distinct('user_id')->count('user_id');
         $totalBerita = Berita::count();
         $totalConversations = Conversation::count();
 
-        $activeKuesioner = Kuesioner::withCount('pertanyaan')->where('is_active', true)->first();
+        $activeKuesioner = Kuesioner::withCount('pertanyaan')->active()->orderBy('end_date')->first();
 
         $recentAlumni = User::with('profile')
             ->where('role', 'alumni')

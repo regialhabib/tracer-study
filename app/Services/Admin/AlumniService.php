@@ -4,6 +4,7 @@ namespace App\Services\Admin;
 
 use App\Enums\AccountStatus;
 use App\Models\AlumniProfile;
+use App\Models\ResponKuesioner;
 use App\Models\User;
 use App\Services\Support\InitialPasswordService;
 use App\Services\Support\WhatsAppLinkService;
@@ -253,6 +254,30 @@ class AlumniService
             'province' => $profile?->province,
             'address' => $profile?->address,
             'whatsapp_url' => $this->whatsAppLinkService->buildUrl($profile?->phone_number),
+            'riwayat_kuesioner' => $this->kuesionerHistory($user),
         ];
+    }
+
+    /**
+     * Riwayat respon kuesioner alumni (tanpa isi jawaban).
+     *
+     * @return list<array{id: int, kuesioner_id: int, title: string, status: string, submitted_at: ?string, updated_at: ?string}>
+     */
+    private function kuesionerHistory(User $user): array
+    {
+        return ResponKuesioner::query()
+            ->with('kuesioner:id,title')
+            ->where('user_id', $user->id)
+            ->latest('updated_at')
+            ->get()
+            ->map(fn (ResponKuesioner $respon): array => [
+                'id' => $respon->id,
+                'kuesioner_id' => $respon->kuesioner_id,
+                'title' => $respon->kuesioner->title,
+                'status' => $respon->status->value,
+                'submitted_at' => $respon->submitted_at?->toIso8601String(),
+                'updated_at' => $respon->updated_at?->toIso8601String(),
+            ])
+            ->all();
     }
 }

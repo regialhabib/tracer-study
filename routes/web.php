@@ -37,6 +37,12 @@ Route::middleware(['auth', 'active', 'not_first_login'])->group(function () {
     Route::delete('/profile/avatar', [ProfileController::class, 'destroyAvatar'])->name('profile.avatar.destroy');
 });
 
+// Pengisian kuesioner — khusus alumni
+Route::middleware(['auth', 'active', 'not_first_login', 'role:alumni'])
+    ->prefix('kuesioner')
+    ->name('alumni.kuesioner.')
+    ->group(base_path('routes/alumni/kuesioner.php'));
+
 // Panel admin — rute per modul ada di routes/admin.php dan routes/admin/*.php
 Route::middleware(['auth', 'active', 'not_first_login', 'role:admin'])
     ->prefix('admin')

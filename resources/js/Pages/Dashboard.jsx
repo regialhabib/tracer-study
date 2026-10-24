@@ -1,6 +1,6 @@
 import AlumniLayout from '@/Layouts/AlumniLayout';
 import { Head, Link, usePage } from '@inertiajs/react';
-import { ArrowRight, CalendarClock, CheckCircle2, CircleAlert, ClipboardCheck, Clock, ListChecks, Newspaper } from 'lucide-react';
+import { ArrowRight, CalendarClock, CheckCircle2, CircleAlert, ClipboardCheck, Clock, ListChecks, Newspaper, PencilLine } from 'lucide-react';
 import { Badge, Button, Card, CardContent, CardDescription, CardFooter, CardHeader, EmptyState, PageHeader } from '@/Components/ui';
 import BeritaCover from '@/Components/berita/BeritaCover';
 import BeritaTypeBadge from '@/Components/berita/BeritaTypeBadge';
@@ -17,8 +17,6 @@ const CURRENT_STATUS_LABELS = {
     lainnya: 'Lainnya',
 };
 
-const KUESIONER_ROUTE = 'alumni.kuesioner.index';
-
 const sectionTitleClasses = 'text-lg font-semibold leading-snug tracking-tight text-foreground';
 
 function firstNameOf(name) {
@@ -30,23 +28,24 @@ function estimateMinutes(questionCount) {
     return Math.max(1, Math.ceil(questionCount / 2));
 }
 
-function KuesionerCard({ kuesioner, hasFilled }) {
+const RESPON_BADGES = {
+    submitted: { label: 'Selesai', variant: 'success', icon: CheckCircle2 },
+    draft: { label: 'Draf tersimpan', variant: 'info', icon: PencilLine },
+    none: { label: 'Wajib diisi', variant: 'warning', icon: CircleAlert },
+};
+
+function KuesionerCard({ kuesioner }) {
     const deadline = formatShortDate(kuesioner.end_date);
     const questionCount = Number(kuesioner.pertanyaan_count) || 0;
-    const isKuesionerAvailable = route().has(KUESIONER_ROUTE);
+    const badge = RESPON_BADGES[kuesioner.respon_status ?? 'none'];
+    const hasFilled = kuesioner.respon_status === 'submitted';
 
     return (
         <Card>
             <CardHeader>
-                {hasFilled ? (
-                    <Badge variant="success" icon={CheckCircle2} className="self-start">
-                        Selesai
-                    </Badge>
-                ) : (
-                    <Badge variant="warning" icon={CircleAlert} className="self-start">
-                        Wajib diisi
-                    </Badge>
-                )}
+                <Badge variant={badge.variant} icon={badge.icon} className="self-start">
+                    {badge.label}
+                </Badge>
                 <h2 className={sectionTitleClasses}>{kuesioner.title}</h2>
                 {kuesioner.description && (
                     <CardDescription className="max-w-prose">{kuesioner.description}</CardDescription>
@@ -77,27 +76,17 @@ function KuesionerCard({ kuesioner, hasFilled }) {
             </CardContent>
 
             <CardFooter className="flex-col items-stretch gap-2 sm:flex-row sm:items-center">
-                {hasFilled ? (
-                    <p className="text-sm text-muted-foreground">
+                {hasFilled && (
+                    <p className="text-sm text-muted-foreground sm:mr-auto">
                         Jazakumullahu khairan, jawaban Anda sudah kami terima.
                     </p>
-                ) : isKuesionerAvailable ? (
-                    <Button asChild size="lg" className="w-full sm:w-auto">
-                        <Link href={route(KUESIONER_ROUTE)}>
-                            Isi Kuesioner
-                            <ArrowRight aria-hidden="true" />
-                        </Link>
-                    </Button>
-                ) : (
-                    <>
-                        <Button size="lg" disabled aria-describedby="kuesioner-hint" className="w-full sm:w-auto">
-                            Isi Kuesioner
-                        </Button>
-                        <p id="kuesioner-hint" className="text-xs text-muted-foreground">
-                            Pengisian dibuka pada pembaruan berikutnya.
-                        </p>
-                    </>
                 )}
+                <Button asChild size="lg" variant={hasFilled ? 'outline' : 'default'} className="w-full sm:w-auto">
+                    <Link href={route('alumni.kuesioner.show', kuesioner.id)}>
+                        {kuesioner.action} Kuesioner
+                        <ArrowRight aria-hidden="true" />
+                    </Link>
+                </Button>
             </CardFooter>
         </Card>
     );
@@ -210,7 +199,7 @@ function BeritaTerbaruCard({ beritaList }) {
     );
 }
 
-export default function Dashboard({ activeKuesioner, hasFilled, beritaList = [] }) {
+export default function Dashboard({ kuesionerList = [], beritaList = [] }) {
     const user = usePage().props.auth?.user;
 
     return (
@@ -225,8 +214,12 @@ export default function Dashboard({ activeKuesioner, hasFilled, beritaList = [] 
 
                 <div className="grid grid-cols-1 gap-4 md:gap-6 lg:grid-cols-3">
                     <section aria-label="Kuesioner aktif" className="lg:col-span-2">
-                        {activeKuesioner ? (
-                            <KuesionerCard kuesioner={activeKuesioner} hasFilled={hasFilled} />
+                        {kuesionerList.length > 0 ? (
+                            <div className="space-y-4">
+                                {kuesionerList.map((kuesioner) => (
+                                    <KuesionerCard key={kuesioner.id} kuesioner={kuesioner} />
+                                ))}
+                            </div>
                         ) : (
                             <Card>
                                 <EmptyState

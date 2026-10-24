@@ -8,7 +8,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * Satu jawaban alumni untuk satu pertanyaan. `answer` disimpan sebagai teks;
+ * gunakan `App\Services\Kuesioner\AnswerCodec` untuk mengubah dari/ke nilai bertipe.
+ */
 #[Fillable([
+    'respon_kuesioner_id',
     'kuesioner_id',
     'user_id',
     'pertanyaan_id',
@@ -25,6 +30,14 @@ class JawabanKuesioner extends Model
      * @var string
      */
     protected $table = 'jawaban_kuesioner';
+
+    /**
+     * Respon (draf/terkirim) tempat jawaban ini berada.
+     */
+    public function respon(): BelongsTo
+    {
+        return $this->belongsTo(ResponKuesioner::class, 'respon_kuesioner_id');
+    }
 
     /**
      * Kuesioner induk dari jawaban ini.

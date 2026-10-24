@@ -2,9 +2,10 @@
 
 namespace Tests\Feature\Alumni;
 
+use App\Models\AlumniProfile;
 use App\Models\Berita;
-use App\Models\JawabanKuesioner;
 use App\Models\Kuesioner;
+use App\Models\ResponKuesioner;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -14,9 +15,17 @@ class BerandaControllerTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_beranda_renders_active_kuesioner_unfilled_and_latest_three_berita(): void
+    private function alumniLulusan(int $graduationYear = 2023): User
     {
         $user = User::factory()->alumni()->create();
+        AlumniProfile::factory()->create(['user_id' => $user->id, 'graduation_year' => $graduationYear]);
+
+        return $user;
+    }
+
+    public function test_beranda_renders_active_kuesioner_unfilled_and_latest_three_berita(): void
+    {
+        $user = $this->alumniLulusan();
         $kuesioner = Kuesioner::factory()->create();
         Kuesioner::factory()->inactive()->create();
         Berita::factory()->count(4)->create();
@@ -30,19 +39,36 @@ class BerandaControllerTest extends TestCase
             ->where('activeKuesioner.id', $kuesioner->id)
             ->has('activeKuesioner.pertanyaan_count')
             ->where('hasFilled', false)
+            ->where('kuesionerList.0.id', $kuesioner->id)
+            ->where('kuesionerList.0.action', 'Mulai')
             ->has('beritaList', 3)
         );
     }
 
-    public function test_beranda_marks_kuesioner_filled_when_user_has_answers(): void
+    public function test_beranda_marks_kuesioner_filled_when_response_submitted(): void
     {
-        $user = User::factory()->alumni()->create();
+        $user = $this->alumniLulusan();
         $kuesioner = Kuesioner::factory()->create();
-        JawabanKuesioner::factory()->create(['kuesioner_id' => $kuesioner->id, 'user_id' => $user->id]);
+        ResponKuesioner::factory()->submitted()->create(['kuesioner_id' => $kuesioner->id, 'user_id' => $user->id]);
 
         $response = $this->actingAs($user)->get(route('dashboard'));
 
-        $response->assertInertia(fn (Assert $page) => $page->where('hasFilled', true));
+        $response->assertInertia(fn (Assert $page) => $page
+            ->where('hasFilled', true)
+            ->where('kuesionerList.0.respon_status', 'submitted')
+            ->where('kuesionerList.0.action', 'Revisi'));
+    }
+
+    public function test_beranda_hides_kuesioner_outside_target_or_period(): void
+    {
+        $user = $this->alumniLulusan(2019);
+        Kuesioner::factory()->create(['target_graduation_years' => [2023]]);
+        Kuesioner::factory()->forAllGraduationYears()->create(['start_date' => now()->addDay(), 'end_date' => now()->addDays(30)]);
+        Kuesioner::factory()->draft()->forAllGraduationYears()->create();
+
+        $response = $this->actingAs($user)->get(route('dashboard'));
+
+        $response->assertInertia(fn (Assert $page) => $page->where('activeKuesioner', null));
     }
 
     public function test_beranda_renders_without_active_kuesioner(): void
