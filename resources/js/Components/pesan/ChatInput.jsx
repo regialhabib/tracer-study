@@ -3,6 +3,7 @@ import { useLayoutEffect, useRef, useState } from 'react';
 import { Button } from '@/Components/ui';
 
 const MAX_LENGTH = 2000;
+const MAX_HEIGHT = 144;
 
 /**
  * ChatInput — textarea auto-grow di bawah panel. Enter mengirim, Shift+Enter baris baru.
@@ -19,7 +20,13 @@ export default function ChatInput({ onSend }) {
 
         if (element) {
             element.style.height = 'auto';
-            element.style.height = `${Math.min(element.scrollHeight, 144)}px`;
+
+            // scrollHeight tidak menghitung border; tanpa ini isi selalu meluap 2px dan scrollbar muncul.
+            const borderHeight = element.offsetHeight - element.clientHeight;
+            const contentHeight = element.scrollHeight + borderHeight;
+
+            element.style.height = `${Math.min(contentHeight, MAX_HEIGHT)}px`;
+            element.style.overflowY = contentHeight > MAX_HEIGHT ? 'auto' : 'hidden';
         }
     }, [value]);
 
