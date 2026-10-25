@@ -56,6 +56,25 @@ function ToolbarButton({ label, onClick, active = false, disabled = false, child
     );
 }
 
+/**
+ * Status toolbar sebelum transaksi pertama. useEditorState baru menghitung ulang saat ada
+ * transaksi, bukan saat instance editor selesai dibuat, jadi nilainya masih null di awal.
+ */
+const INITIAL_TOOLBAR_STATE = {
+    bold: false,
+    italic: false,
+    underline: false,
+    strike: false,
+    h2: false,
+    h3: false,
+    bulletList: false,
+    orderedList: false,
+    blockquote: false,
+    link: false,
+    canUndo: false,
+    canRedo: false,
+};
+
 function ToolbarDivider() {
     return <span aria-hidden="true" className="mx-1 hidden h-5 w-px shrink-0 bg-border sm:block" />;
 }
@@ -127,7 +146,7 @@ export default function RichTextEditor({
         }
     }, [value, editor]);
 
-    const state = useEditorState({
+    const selectedState = useEditorState({
         editor,
         selector: ({ editor: current }) => {
             if (!current) {
@@ -151,7 +170,9 @@ export default function RichTextEditor({
         },
     });
 
-    if (!editor || !state) {
+    const state = selectedState ?? INITIAL_TOOLBAR_STATE;
+
+    if (!editor) {
         return (
             <div
                 aria-hidden="true"
