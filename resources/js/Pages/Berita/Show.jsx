@@ -36,11 +36,11 @@ export default function Show({ berita, beritaTerkait = [] }) {
             <div className="py-6 md:py-12">
                 <article className="mx-auto flex max-w-3xl flex-col gap-6 px-4 sm:px-6 md:gap-8 lg:px-8">
                     <Link
-                        href="/"
+                        href={route('berita.index')}
                         className="inline-flex w-fit items-center gap-1.5 rounded-md text-sm font-semibold text-muted-foreground transition-colors duration-150 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                     >
                         <ArrowLeft aria-hidden="true" className="size-4" />
-                        Kembali ke Beranda
+                        Kembali ke Kabar &amp; Agenda
                     </Link>
 
                     <header className="flex flex-col gap-4">

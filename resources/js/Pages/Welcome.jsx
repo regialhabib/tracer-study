@@ -1,12 +1,8 @@
-import { useState } from 'react';
 import { Head, Link } from '@inertiajs/react';
-import { ArrowRight, BookOpenCheck, ChevronLeft, ChevronRight, HeartHandshake, Newspaper, ShieldCheck } from 'lucide-react';
+import { ArrowRight, BookOpenCheck, HeartHandshake, Newspaper, ShieldCheck } from 'lucide-react';
 import { Button, Card, EmptyState } from '@/Components/ui';
 import BeritaCard from '@/Components/berita/BeritaCard';
 import PublicLayout from '@/Layouts/PublicLayout';
-import { cn } from '@/lib/utils';
-
-const BERITA_PER_PAGE = 3;
 
 const tracerBenefits = [
     {
@@ -26,35 +22,9 @@ const tracerBenefits = [
     },
 ];
 
-const pageButtonClasses =
-    'inline-flex h-10 min-w-10 items-center justify-center rounded-md px-3 text-sm font-medium tabular-nums transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
-
 export default function Welcome({ auth, beritaTerbaru = [] }) {
-    const [currentPage, setCurrentPage] = useState(1);
-    const totalPages = Math.ceil(beritaTerbaru.length / BERITA_PER_PAGE) || 1;
-    const startIndex = (currentPage - 1) * BERITA_PER_PAGE;
-    const displayedBerita = beritaTerbaru.slice(startIndex, startIndex + BERITA_PER_PAGE);
-    const endIndex = Math.min(startIndex + BERITA_PER_PAGE, beritaTerbaru.length);
-
-    const handlePrevPage = () => {
-        if (currentPage > 1) {
-            setCurrentPage((prev) => prev - 1);
-        }
-    };
-
-    const handleNextPage = () => {
-        if (currentPage < totalPages) {
-            setCurrentPage((prev) => prev + 1);
-        }
-    };
-
     return (
-        <PublicLayout
-            navigation={[
-                { label: 'Kabar & Berita', href: '#berita' },
-                { label: 'Manfaat Tracer', href: '#manfaat' },
-            ]}
-        >
+        <PublicLayout>
             <Head title="Tracer Study - Pondok Pesantren RIYADHUL AMIEN" />
 
             {/* Hero */}
@@ -131,12 +101,19 @@ export default function Welcome({ auth, beritaTerbaru = [] }) {
                         </p>
                     </div>
 
-                    <ul className="mt-8 grid gap-6 md:grid-cols-3 md:gap-8">
+                    <ul className="mt-8 grid gap-4 md:grid-cols-3 md:gap-6">
                         {tracerBenefits.map(({ icon: Icon, title, description }) => (
-                            <li key={title} className="flex flex-col gap-2 border-t border-border pt-5">
-                                <Icon aria-hidden="true" className="size-5 text-primary" />
-                                <h3 className="text-base font-semibold text-foreground">{title}</h3>
-                                <p className="text-sm text-muted-foreground">{description}</p>
+                            <li key={title}>
+                                <Card className="flex h-full flex-col gap-3 p-5 md:p-6">
+                                    <span
+                                        aria-hidden="true"
+                                        className="flex size-11 items-center justify-center rounded-lg bg-primary-soft text-primary"
+                                    >
+                                        <Icon className="size-5" />
+                                    </span>
+                                    <h3 className="text-base font-semibold text-foreground">{title}</h3>
+                                    <p className="text-sm text-muted-foreground">{description}</p>
+                                </Card>
                             </li>
                         ))}
                     </ul>
@@ -146,7 +123,7 @@ export default function Welcome({ auth, beritaTerbaru = [] }) {
             {/* Kabar terbaru */}
             <section id="berita" className="scroll-mt-20 border-t border-border bg-card py-12 md:py-16">
                 <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-                    <div className="mb-8 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
+                    <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                         <div className="flex flex-col gap-2">
                             <h2 className="text-[22px] font-bold tracking-tight text-foreground md:text-2xl">
                                 Kabar &amp; Agenda Pesantren
@@ -156,80 +133,29 @@ export default function Welcome({ auth, beritaTerbaru = [] }) {
                             </p>
                         </div>
                         {beritaTerbaru.length > 0 && (
-                            <span className="text-xs font-medium tabular-nums text-muted-foreground">
-                                {beritaTerbaru.length.toLocaleString('id-ID')} kabar diterbitkan
-                            </span>
+                            <Button asChild variant="outline" className="hidden sm:inline-flex">
+                                <Link href={route('berita.index')}>
+                                    Lihat semua kabar
+                                    <ArrowRight aria-hidden="true" />
+                                </Link>
+                            </Button>
                         )}
                     </div>
 
                     {beritaTerbaru.length > 0 ? (
                         <>
                             <div className="grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-6">
-                                {displayedBerita.map((berita) => (
+                                {beritaTerbaru.map((berita) => (
                                     <BeritaCard key={berita.id} berita={berita} />
                                 ))}
                             </div>
 
-                            {totalPages > 1 && (
-                                <div className="mt-8 flex flex-col items-center justify-between gap-4 border-t border-border pt-6 sm:flex-row">
-                                    <p className="text-sm tabular-nums text-muted-foreground">
-                                        Menampilkan{' '}
-                                        <span className="font-semibold text-foreground">
-                                            {startIndex + 1}–{endIndex}
-                                        </span>{' '}
-                                        dari <span className="font-semibold text-foreground">{beritaTerbaru.length}</span> kabar
-                                    </p>
-
-                                    <nav aria-label="Navigasi halaman kabar">
-                                        <ul className="flex items-center gap-1">
-                                            <li>
-                                                <Button
-                                                    variant="outline"
-                                                    size="icon"
-                                                    onClick={handlePrevPage}
-                                                    disabled={currentPage === 1}
-                                                    aria-label="Halaman sebelumnya"
-                                                >
-                                                    <ChevronLeft aria-hidden="true" />
-                                                </Button>
-                                            </li>
-                                            {Array.from({ length: totalPages }, (_, index) => {
-                                                const pageNumber = index + 1;
-                                                const isActive = currentPage === pageNumber;
-
-                                                return (
-                                                    <li key={pageNumber} className={isActive ? undefined : 'hidden sm:block'}>
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => setCurrentPage(pageNumber)}
-                                                            aria-current={isActive ? 'page' : undefined}
-                                                            className={cn(
-                                                                pageButtonClasses,
-                                                                isActive
-                                                                    ? 'bg-primary text-primary-foreground hover:bg-primary-hover'
-                                                                    : 'text-foreground hover:bg-muted',
-                                                            )}
-                                                        >
-                                                            {pageNumber}
-                                                        </button>
-                                                    </li>
-                                                );
-                                            })}
-                                            <li>
-                                                <Button
-                                                    variant="outline"
-                                                    size="icon"
-                                                    onClick={handleNextPage}
-                                                    disabled={currentPage === totalPages}
-                                                    aria-label="Halaman berikutnya"
-                                                >
-                                                    <ChevronRight aria-hidden="true" />
-                                                </Button>
-                                            </li>
-                                        </ul>
-                                    </nav>
-                                </div>
-                            )}
+                            <Button asChild variant="outline" className="mt-6 w-full sm:hidden">
+                                <Link href={route('berita.index')}>
+                                    Lihat semua kabar
+                                    <ArrowRight aria-hidden="true" />
+                                </Link>
+                            </Button>
                         </>
                     ) : (
                         <Card>
