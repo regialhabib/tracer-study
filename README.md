@@ -1,58 +1,140 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Tracer Study Alumni — PP Riyadhul Amien
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Sistem web untuk menelusuri kiprah alumni **Madrasah Aliyah Pondok Pesantren Riyadhul Amien** setelah lulus: khidmah/pengabdian, kuliah, bekerja, atau wirausaha. Alumni mengisi kuesioner tracer study secara berkala dan memperbarui biodatanya. Pengelola madrasah mendapat data yang rapi beserta analitik siap pakai untuk **akreditasi, evaluasi kurikulum, dan menjaga silaturahmi alumni**.
 
-## About Laravel
+## Fitur
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+| Modul | Isi |
+|---|---|
+| **Akun & Autentikasi** | Login dengan NISN atau email, onboarding wajib di login pertama (WhatsApp + persetujuan penggunaan data), pendaftaran mandiri dengan verifikasi admin, reset password oleh admin, kelola akun admin |
+| **Data Alumni** | Daftar alumni dengan pencarian & filter, tambah/ubah/nonaktifkan, import Excel dengan pratinjau dan validasi per baris, ekspor Excel, profil & foto alumni |
+| **Kuesioner** | Builder per bagian dengan 8 tipe pertanyaan, logika kondisional, `metric_key` untuk analitik, duplikasi & pratinjau; pengisian bertahap (stepper) dengan simpan draf otomatis dan revisi selama periode buka |
+| **Analitik & Laporan** | Ringkasan dashboard, response rate per angkatan, distribusi status kegiatan, masa tunggu, rentang pendapatan, rekap per pertanyaan, ekspor jawaban ke Excel dan laporan ke PDF |
+| **Berita & Agenda** | Berita, agenda, pengumuman, dan info beasiswa dengan editor teks kaya, jadwal terbit, dan halaman publik |
+| **Pesan Pribadi** | Chat 1-ke-1 real-time (Laravel Reverb), kotak masuk, tanda sudah dibaca, pencarian kontak, blokir pengguna, pengaturan privasi |
+| **Notifikasi** | Lonceng dalam aplikasi, tautan WhatsApp siap kirim, pengingat kuesioner otomatis setiap hari |
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Teknologi
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- **Backend:** PHP 8.4, Laravel 13, Inertia.js v2, Laravel Reverb, Sanctum
+- **Frontend:** React 18, Tailwind CSS 3, Vite, Recharts, Tiptap, dnd-kit
+- **Pendukung:** OpenSpout (Excel), DomPDF (PDF), HTML Purifier, Intervention Image
+- **Basis data:** MySQL (produksi/lokal) atau SQLite; tes memakai SQLite in-memory
 
-## Learning Laravel
+## Persyaratan
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+- PHP 8.4 dengan ekstensi `pdo_mysql` (atau `pdo_sqlite`), `gd`, `zip`, `mbstring`
+- Composer 2
+- Node.js 20 ke atas dan npm
+- MySQL 8 (opsional bila memakai SQLite)
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+## Instalasi Lokal
 
 ```bash
-composer require laravel/boost --dev
+git clone https://github.com/regialhabib/tracer-study.git
+cd tracer-study
 
-php artisan boost:install
+composer install
+npm install
+
+cp .env.example .env
+php artisan key:generate
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Atur koneksi basis data di `.env`. Bawaannya SQLite; untuk MySQL:
 
-## Contributing
+```dotenv
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=tracer-study
+DB_USERNAME=root
+DB_PASSWORD=
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Lalu siapkan basis data, data contoh, dan tautan penyimpanan:
 
-## Code of Conduct
+```bash
+php artisan migrate --seed
+php artisan storage:link
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### Pesan real-time (opsional)
 
-## Security Vulnerabilities
+Tanpa konfigurasi tambahan, pesan tetap tersimpan tetapi baru muncul setelah halaman dimuat ulang. Untuk pengiriman real-time, tambahkan konfigurasi Reverb ke `.env` (isi ID, key, dan secret dengan string acak):
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```dotenv
+BROADCAST_CONNECTION=reverb
 
-## License
+REVERB_APP_ID=123456
+REVERB_APP_KEY=ganti-dengan-key-acak
+REVERB_APP_SECRET=ganti-dengan-secret-acak
+REVERB_HOST="localhost"
+REVERB_PORT=8080
+REVERB_SCHEME=http
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+VITE_REVERB_APP_KEY="${REVERB_APP_KEY}"
+VITE_REVERB_HOST="${REVERB_HOST}"
+VITE_REVERB_PORT="${REVERB_PORT}"
+VITE_REVERB_SCHEME="${REVERB_SCHEME}"
+```
+
+## Menjalankan Aplikasi
+
+```bash
+composer run dev
+```
+
+Perintah ini menjalankan server aplikasi, Vite, Reverb, queue worker, dan scheduler sekaligus. Buka **http://localhost:8000**.
+
+### Akun contoh (dari seeder)
+
+| Peran | Login | Password |
+|---|---|---|
+| Admin | `admin@pesantren.sch.id` | `password` |
+| Alumni | NISN `0051234501` s.d. `0051234508` | `password` |
+
+> Ganti atau hapus akun contoh sebelum dipakai di lingkungan produksi.
+
+## Tes & Format Kode
+
+```bash
+php artisan test --compact        # seluruh tes PHPUnit
+vendor/bin/pint --dirty           # format kode PHP yang berubah
+npm run build                     # build aset produksi
+```
+
+## Penjadwalan
+
+`kuesioner:kirim-pengingat` berjalan setiap hari pukul 07.00 (WIB) untuk mengirim pengingat H-7 kepada alumni yang belum mengisi kuesioner aktif. Di server produksi, daftarkan scheduler Laravel di cron:
+
+```cron
+* * * * * cd /path/ke/tracer-study && php artisan schedule:run >> /dev/null 2>&1
+```
+
+Jalankan juga queue worker (`php artisan queue:work`) dan, bila memakai pesan real-time, `php artisan reverb:start`.
+
+## Struktur Proyek
+
+```
+app/
+├── Enums/              Status akun, status kegiatan, tipe pertanyaan, dll.
+├── Http/Controllers/   Controller tipis per area (Admin, Alumni, Auth, Pesan)
+├── Http/Requests/      Validasi (Form Request)
+├── Services/           Logika bisnis per area (Admin, Alumni, Kuesioner, Pesan, ...)
+└── Models/             Model Eloquent (nama domain berbahasa Indonesia)
+resources/js/
+├── Pages/              Halaman Inertia per area
+├── Components/ui/      Komponen dasar design system
+└── Layouts/            AdminLayout, AlumniLayout, PublicLayout, GuestLayout
+routes/
+├── web.php             Rute utama dan publik
+├── admin.php, admin/   Rute panel admin per modul
+└── alumni/, pesan.php  Rute alumni dan pesan
+```
+
+Alur kode: **controller → Form Request → Service**, dengan otorisasi di middleware peran dan Form Request.
+
+## Kredit
+
+Foto contoh di `public/images` berasal dari [Unsplash](https://unsplash.com) di bawah Unsplash License. Rincian per foto ada di [`public/images/CREDITS.md`](public/images/CREDITS.md).
