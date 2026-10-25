@@ -219,7 +219,7 @@ class AlumniService
             'id' => $user->id,
             'name' => $user->name,
             'nisn' => $user->nisn,
-            'avatar_url' => $profile?->avatar_src,
+            'avatar_url' => $user->avatar_src,
             'graduation_year' => $profile?->graduation_year,
             'major' => $profile?->major,
             'gender' => $profile?->gender,

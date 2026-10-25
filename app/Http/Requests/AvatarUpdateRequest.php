@@ -8,13 +8,11 @@ use Illuminate\Foundation\Http\FormRequest;
 class AvatarUpdateRequest extends FormRequest
 {
     /**
-     * Hanya alumni yang memiliki profil yang boleh mengelola foto profil.
+     * Setiap pengguna (admin maupun alumni) mengelola foto profilnya sendiri.
      */
     public function authorize(): bool
     {
-        $user = $this->user();
-
-        return $user->isAlumni() && $user->profile()->exists();
+        return $this->user() !== null;
     }
 
     /**

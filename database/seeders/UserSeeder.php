@@ -219,7 +219,6 @@ class UserSeeder extends Seeder
                 'city' => $data['city'],
                 'province' => $data['province'],
                 'address' => $data['address'],
-                'avatar_url' => null,
             ]);
         }
     }

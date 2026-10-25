@@ -49,7 +49,6 @@ export default function UpdateProfileInformation({
                                 value={data.name}
                                 onChange={(e) => setData('name', e.target.value)}
                                 required
-                                autoFocus
                                 autoComplete="name"
                                 invalid={Boolean(errors.name)}
                                 aria-describedby={errors.name ? 'name-error' : undefined}

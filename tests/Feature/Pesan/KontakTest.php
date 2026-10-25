@@ -5,6 +5,7 @@ namespace Tests\Feature\Pesan;
 use App\Models\AlumniProfile;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Testing\TestResponse;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
@@ -78,6 +79,19 @@ class KontakTest extends TestCase
 
         $this->assertNotContains($private->id, $this->contactIds($this->actingAs($me)->get(route('pesan.cari'))));
         $this->assertContains($private->id, $this->contactIds($this->actingAs($admin)->get(route('pesan.cari'))));
+    }
+
+    public function test_contact_shows_avatar_of_admin_and_alumni(): void
+    {
+        $me = $this->alumni();
+        $admin = User::factory()->admin()->create(['avatar_path' => 'avatars/admin.jpg']);
+        $alumni = $this->alumni(['avatar_path' => 'avatars/alumni.jpg']);
+
+        $contacts = collect($this->actingAs($me)->get(route('pesan.cari'))->viewData('page')['props']['contacts']['data'])
+            ->keyBy('id');
+
+        $this->assertSame(Storage::disk('public')->url('avatars/admin.jpg'), $contacts[$admin->id]['avatar_src']);
+        $this->assertSame(Storage::disk('public')->url('avatars/alumni.jpg'), $contacts[$alumni->id]['avatar_src']);
     }
 
     public function test_alumni_sees_admin_and_users_who_blocked_them_are_hidden(): void

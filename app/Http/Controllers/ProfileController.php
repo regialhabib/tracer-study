@@ -52,7 +52,6 @@ class ProfileController extends Controller
                 'province' => $profile->province,
                 'address' => $profile->address,
                 'current_status' => $profile->current_status,
-                'avatar_url' => $profile->avatar_src,
             ],
         ]);
     }

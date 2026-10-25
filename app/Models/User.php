@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -17,9 +18,11 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Storage;
 
 #[Fillable([
     'name',
+    'avatar_path',
     'nisn',
     'email',
     'password',
@@ -38,6 +41,11 @@ class User extends Authenticatable
     use HasFactory, Notifiable, SoftDeletes;
 
     /**
+     * @var list<string>
+     */
+    protected $appends = ['avatar_src'];
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
@@ -52,6 +60,27 @@ class User extends Authenticatable
             'verified_at' => 'datetime',
             'data_consent_at' => 'datetime',
         ];
+    }
+
+    /**
+     * URL publik foto profil. `avatar_path` menyimpan path di disk `public`;
+     * nilai yang sudah berupa URL penuh atau path absolut dibiarkan apa adanya.
+     *
+     * @return Attribute<?string, never>
+     */
+    protected function avatarSrc(): Attribute
+    {
+        return Attribute::get(function (): ?string {
+            $path = $this->avatar_path;
+
+            if ($path === null || $path === '') {
+                return null;
+            }
+
+            return str_starts_with($path, 'http') || str_starts_with($path, '/')
+                ? $path
+                : Storage::disk('public')->url($path);
+        });
     }
 
     /**

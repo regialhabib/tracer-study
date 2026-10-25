@@ -31,7 +31,7 @@ export default function UserMenu({ children }) {
                 className="inline-flex h-10 items-center gap-2 rounded-full pl-1 pr-1 transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:pr-2.5"
             >
                 <Avatar className="size-8">
-                    {user.profile?.avatar_src && <AvatarImage src={user.profile.avatar_src} alt="" />}
+                    {user.avatar_src && <AvatarImage src={user.avatar_src} alt="" />}
                     <AvatarFallback className="text-xs">{initialsFromName(user.name)}</AvatarFallback>
                 </Avatar>
                 <span className="hidden max-w-[10rem] truncate text-sm font-semibold text-foreground sm:block">

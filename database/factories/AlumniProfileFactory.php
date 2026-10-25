@@ -41,7 +41,6 @@ class AlumniProfileFactory extends Factory
             'city' => fake()->city(),
             'province' => fake()->state(),
             'address' => fake()->address(),
-            'avatar_url' => null,
         ];
     }
 

@@ -15,6 +15,7 @@ import {
     Label,
 } from '@/Components/ui';
 import { useForm } from '@inertiajs/react';
+import { TriangleAlert } from 'lucide-react';
 import { useRef, useState } from 'react';
 
 export default function DeleteUserForm({ className = '' }) {
@@ -57,12 +58,13 @@ export default function DeleteUserForm({ className = '' }) {
 
     return (
         <section aria-labelledby="delete-account-title" className={className}>
-            <Card>
+            <Card className="border-danger/30">
                 <CardHeader>
                     <h2
                         id="delete-account-title"
-                        className="text-lg font-semibold leading-snug tracking-tight text-foreground"
+                        className="flex items-center gap-2 text-lg font-semibold leading-snug tracking-tight text-danger"
                     >
+                        <TriangleAlert aria-hidden="true" className="size-5 shrink-0" />
                         Hapus Akun
                     </h2>
                     <CardDescription>

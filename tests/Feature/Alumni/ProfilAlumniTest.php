@@ -108,7 +108,7 @@ class ProfilAlumniTest extends TestCase
             'avatar' => UploadedFile::fake()->image('a.jpg'),
         ])->assertSessionHasNoErrors();
 
-        $first = $user->profile->fresh()->avatar_url;
+        $first = $user->fresh()->avatar_path;
         Storage::disk('public')->assertExists($first);
         $this->assertStringStartsWith('avatars/', $first);
 
@@ -116,14 +116,14 @@ class ProfilAlumniTest extends TestCase
             'avatar' => UploadedFile::fake()->image('b.png'),
         ])->assertSessionHasNoErrors();
 
-        $second = $user->profile->fresh()->avatar_url;
+        $second = $user->fresh()->avatar_path;
         Storage::disk('public')->assertMissing($first);
         Storage::disk('public')->assertExists($second);
 
         $this->actingAs($user)->delete('/profile/avatar')->assertRedirect('/profile');
 
         Storage::disk('public')->assertMissing($second);
-        $this->assertNull($user->profile->fresh()->avatar_url);
+        $this->assertNull($user->fresh()->avatar_path);
     }
 
     public function test_invalid_avatar_is_rejected(): void
@@ -157,9 +157,22 @@ class ProfilAlumniTest extends TestCase
 
         $this->assertSame('Admin Baru', $admin->fresh()->name);
         $this->assertNull($admin->profile);
+    }
+
+    public function test_admin_can_upload_avatar_without_alumni_profile(): void
+    {
+        Storage::fake('public');
+        $admin = User::factory()->admin()->create();
 
         $this->actingAs($admin)->post('/profile/avatar', [
             'avatar' => UploadedFile::fake()->image('a.jpg'),
-        ])->assertForbidden();
+        ])->assertRedirect('/profile');
+
+        $path = $admin->fresh()->avatar_path;
+        Storage::disk('public')->assertExists($path);
+        $this->assertNull($admin->fresh()->profile);
+
+        $this->actingAs($admin)->get('/profile')
+            ->assertInertia(fn (Assert $page) => $page->where('auth.user.avatar_src', Storage::disk('public')->url($path)));
     }
 }

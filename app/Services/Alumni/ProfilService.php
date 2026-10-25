@@ -42,11 +42,10 @@ class ProfilService
      */
     public function storeAvatar(User $user, UploadedFile $file): string
     {
-        $profile = $user->profile;
-        $oldPath = $profile->avatar_url;
+        $oldPath = $user->avatar_path;
         $newPath = $file->store('avatars', 'public');
 
-        $profile->update(['avatar_url' => $newPath]);
+        $user->update(['avatar_path' => $newPath]);
 
         $this->deleteFile($oldPath);
 
@@ -55,14 +54,13 @@ class ProfilService
 
     public function deleteAvatar(User $user): void
     {
-        $profile = $user->profile;
-        $oldPath = $profile?->avatar_url;
+        $oldPath = $user->avatar_path;
 
-        if ($profile === null || $oldPath === null) {
+        if ($oldPath === null) {
             return;
         }
 
-        $profile->update(['avatar_url' => null]);
+        $user->update(['avatar_path' => null]);
 
         $this->deleteFile($oldPath);
     }

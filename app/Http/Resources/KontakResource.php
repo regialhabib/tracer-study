@@ -24,7 +24,7 @@ class KontakResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'avatar_src' => $this->profile?->avatar_src,
+            'avatar_src' => $this->avatar_src,
             'is_admin' => $this->isAdmin(),
             'angkatan' => $this->isAlumni() ? $this->profile?->graduation_year : null,
             'major' => $this->isAlumni() ? $this->profile?->major : null,
