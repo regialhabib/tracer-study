@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
-import { Pencil, Plus, ShieldCheck, UserCheck, UserX } from 'lucide-react';
+import { MoreHorizontal, Pencil, Plus, ShieldCheck, UserCheck, UserX } from 'lucide-react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import {
     Alert,
@@ -14,6 +14,10 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
     EmptyState,
     PageHeader,
     Pagination,
@@ -42,30 +46,35 @@ function StatusBadge({ status }) {
 
 function RowActions({ admin, onDeactivate, onActivate }) {
     return (
-        <div className="flex flex-wrap gap-2">
+        <div className="flex items-center gap-2">
             <Button asChild size="sm" variant="outline">
                 <Link href={route('admin.pengguna.edit', admin.id)}>
                     <Pencil aria-hidden="true" />
                     Ubah Data
                 </Link>
             </Button>
-            {admin.status === 'active' ? (
-                <Button
-                    size="sm"
-                    variant="ghost"
-                    disabled={admin.is_self}
-                    title={admin.is_self ? 'Anda tidak dapat menonaktifkan akun sendiri.' : undefined}
-                    onClick={() => onDeactivate(admin)}
-                >
-                    <UserX aria-hidden="true" />
-                    Nonaktifkan
-                </Button>
-            ) : (
-                <Button size="sm" variant="ghost" onClick={() => onActivate(admin)}>
-                    <UserCheck aria-hidden="true" />
-                    Aktifkan Kembali
-                </Button>
-            )}
+            <DropdownMenu>
+                <DropdownMenuTrigger as={Button} variant="ghost" size="icon-sm" aria-label={`Aksi lainnya untuk ${admin.name}`}>
+                    <MoreHorizontal aria-hidden="true" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                    {admin.status === 'active' ? (
+                        <DropdownMenuItem
+                            icon={UserX}
+                            destructive
+                            disabled={admin.is_self}
+                            title={admin.is_self ? 'Anda tidak dapat menonaktifkan akun sendiri.' : undefined}
+                            onClick={() => onDeactivate(admin)}
+                        >
+                            Nonaktifkan
+                        </DropdownMenuItem>
+                    ) : (
+                        <DropdownMenuItem icon={UserCheck} onClick={() => onActivate(admin)}>
+                            Aktifkan Kembali
+                        </DropdownMenuItem>
+                    )}
+                </DropdownMenuContent>
+            </DropdownMenu>
         </div>
     );
 }

@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
-import { ExternalLink, Newspaper, Pencil, Plus, SearchX, Trash2 } from 'lucide-react';
+import { ExternalLink, MoreHorizontal, Newspaper, Pencil, Plus, SearchX, Trash2 } from 'lucide-react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import {
-    Badge,
     Button,
     Card,
     CardContent,
@@ -12,6 +11,11 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
     EmptyState,
     PageHeader,
     Pagination,
@@ -24,6 +28,7 @@ import {
 } from '@/Components/ui';
 import BeritaFilters from '@/Components/admin/berita/BeritaFilters';
 import BeritaStatusBadge from '@/Components/admin/berita/BeritaStatusBadge';
+import BeritaTypeBadge from '@/Components/berita/BeritaTypeBadge';
 
 const dateFormatter = new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
 const numberFormatter = new Intl.NumberFormat('id-ID');
@@ -47,25 +52,31 @@ function Thumbnail({ item }) {
 
 function RowActions({ item, onDelete }) {
     return (
-        <div className="flex flex-wrap items-center gap-2">
-            {item.state === 'published' && (
-                <Button asChild size="sm" variant="ghost">
-                    <Link href={route('berita.show', item.slug)}>
-                        <ExternalLink aria-hidden="true" />
-                        Lihat
-                    </Link>
-                </Button>
-            )}
+        <div className="flex items-center gap-2">
             <Button asChild size="sm" variant="outline">
                 <Link href={route('admin.berita.edit', item.id)}>
                     <Pencil aria-hidden="true" />
                     Sunting
                 </Link>
             </Button>
-            <Button size="sm" variant="ghost" aria-label={`Hapus ${item.title}`} onClick={() => onDelete(item)}>
-                <Trash2 aria-hidden="true" />
-                Hapus
-            </Button>
+            <DropdownMenu>
+                <DropdownMenuTrigger as={Button} variant="ghost" size="icon-sm" aria-label={`Aksi lainnya untuk ${item.title}`}>
+                    <MoreHorizontal aria-hidden="true" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                    {item.state === 'published' && (
+                        <>
+                            <DropdownMenuItem icon={ExternalLink} href={route('berita.show', item.slug)}>
+                                Lihat di Situs
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                        </>
+                    )}
+                    <DropdownMenuItem icon={Trash2} destructive onClick={() => onDelete(item)}>
+                        Hapus
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
         </div>
     );
 }
@@ -151,7 +162,7 @@ export default function Index({ berita, filters, options }) {
                                                         </div>
                                                     </TableCell>
                                                     <TableCell>
-                                                        <Badge variant="info">{item.type_label}</Badge>
+                                                        <BeritaTypeBadge type={item.type} />
                                                     </TableCell>
                                                     <TableCell>
                                                         <BeritaStatusBadge state={item.state} />
@@ -174,7 +185,7 @@ export default function Index({ berita, filters, options }) {
                                                 <p className="min-w-0 font-semibold text-foreground">{item.title}</p>
                                             </div>
                                             <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-                                                <Badge variant="info">{item.type_label}</Badge>
+                                                <BeritaTypeBadge type={item.type} />
                                                 <BeritaStatusBadge state={item.state} />
                                                 <span>{formatDate(item.published_at)}</span>
                                             </div>

@@ -51,6 +51,7 @@ export default function BarChartView({
                     layout={layout}
                     margin={{ top: 20, right: isHorizontalBars ? 72 : 8, bottom: 0, left: 0 }}
                     barCategoryGap="28%"
+                    accessibilityLayer={false}
                 >
                     <CartesianGrid
                         stroke="hsl(var(--border))"
@@ -64,9 +65,9 @@ export default function BarChartView({
                             <YAxis
                                 type="category"
                                 dataKey="label"
-                                width={112}
+                                width={140}
                                 tick={AXIS_TICK}
-                                tickFormatter={(value) => truncate(value, 16)}
+                                tickFormatter={(value) => truncate(value, 20)}
                                 axisLine={false}
                                 tickLine={false}
                                 interval={0}

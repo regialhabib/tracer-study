@@ -60,22 +60,21 @@ export default function BeritaFilters({ filters, options }) {
 
     return (
         <div className="space-y-3">
-            <div className="relative">
-                <Search
-                    aria-hidden="true"
-                    className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
-                />
-                <Input
-                    type="search"
-                    value={values.q}
-                    onChange={(event) => update('q', event.target.value)}
-                    placeholder="Cari judul"
-                    aria-label="Cari judul"
-                    className="pl-9"
-                />
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-[minmax(0,1fr)_12rem_12rem] md:items-end">
+                <div className="relative col-span-2 md:col-span-1">
+                    <Search
+                        aria-hidden="true"
+                        className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+                    />
+                    <Input
+                        type="search"
+                        value={values.q}
+                        onChange={(event) => update('q', event.target.value)}
+                        placeholder="Cari judul"
+                        aria-label="Cari judul"
+                        className="pl-9"
+                    />
+                </div>
                 <div className="space-y-1.5">
                     <Label htmlFor="filter-tipe">Tipe</Label>
                     <Select
